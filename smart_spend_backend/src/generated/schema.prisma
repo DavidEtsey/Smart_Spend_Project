@@ -1,0 +1,180 @@
+generator client {
+  provider   = "prisma-client-js"
+  output     = "../src/generated"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  user_id       Int       @id @default(autoincrement())
+  username      String?   @unique @db.VarChar(100)
+  full_name     String?   @db.VarChar(225)
+  email         String    @unique @db.VarChar(100)
+  password_hash String
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+
+  budget         Budget[]
+  category       Category[]
+  expense        Expense[]
+  income         Income[]
+  account        Account[]
+  transfer       Transfer[]
+  userSettings   UserSetting[]
+  passwordResets PasswordReset[]
+
+  @@map("user")
+}
+
+model Expense {
+  expense_id  Int       @id @default(autoincrement())
+  user_id     Int
+  account_id  Int
+  category_id Int
+  amount      Decimal   @db.Decimal(10, 2)
+  description String
+  currency    String    @default("GHS")
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+
+  user     User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  category Category? @relation(fields: [category_id], references: [category_id])
+  account  Account?  @relation(fields: [account_id], references: [account_id])
+
+  @@index([user_id])
+  @@index([category_id])
+  @@map("expense")
+}
+
+model Income {
+  income_id   Int      @id @default(autoincrement())
+  user_id     Int
+  account_id  Int
+  category_id Int
+  amount      Decimal  @db.Decimal(10, 2)
+  description String
+  currency    String   @default("GHS")
+  received_at DateTime @default(now()) @db.Timestamp(6)
+
+  user     User      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  account  Account?  @relation(fields: [account_id], references: [account_id])
+  category Category? @relation(fields: [category_id], references: [category_id])
+
+  @@index([user_id])
+  @@map("income")
+}
+
+model Transfer {
+  transfer_id     Int      @id @default(autoincrement())
+  user_id         Int
+  from_account_id Int
+  to_account_id   Int
+  amount          Decimal  @db.Decimal(10, 2)
+  description     String
+  currency        String   @default("GHS")
+  received_at     DateTime @default(now()) @db.Timestamp(6)
+
+  users       User    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  fromAccount Account @relation("transferFrom", fields: [from_account_id], references: [account_id])
+  toAccount   Account @relation("transferTo", fields: [to_account_id], references: [account_id])
+
+  @@index([user_id])
+  @@map("transfer")
+}
+
+model Budget {
+  budget_id   Int       @id @default(autoincrement())
+  user_id     Int
+  category_id Int
+  amount      Decimal   @db.Decimal(10, 2)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  month       Int
+  year        Int
+
+  user     User     @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  category Category @relation(fields: [category_id], references: [category_id])
+
+  @@index([user_id])
+  @@index([category_id])
+  @@map("budget")
+}
+
+model Category {
+  category_id Int           @id @default(autoincrement())
+  user_id     Int? // NULL = global category
+  name        String        @db.VarChar(100)
+  icon        String?       @db.VarChar(100)
+  type        CategoryType? // NULL for global, specific type for user-created
+  color       String?
+  created_at  DateTime      @default(now()) @db.Timestamp(6)
+
+  users User? @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  expense Expense[]
+  budget  Budget[]
+  income  Income[]
+
+  @@unique([user_id, name]) // prevents duplicate per user or global
+  @@index([user_id])
+  @@map("category")
+}
+
+enum CategoryType {
+  income
+  expense
+  transfer
+}
+
+model Account {
+  account_id Int       @id @default(autoincrement())
+  user_id    Int? // NULL = default account
+  name       String    @db.VarChar(100)
+  icon       String?   @db.VarChar(100)
+  color      String?
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @updatedAt
+
+  user User? @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  expenses      Expense[]
+  income        Income[]
+  transfersFrom Transfer[] @relation("transferFrom")
+  transfersTo   Transfer[] @relation("transferTo")
+
+  @@unique([user_id, name])
+  @@index([user_id])
+  @@map("account")
+}
+
+model UserSetting {
+  id                   Int      @id @default(autoincrement())
+  user_id              Int
+  darkMode             Boolean  @default(false)
+  insightsEnabled      Boolean  @default(true)
+  notificationsEnabled Boolean  @default(true)
+  appLockEnabled       Boolean  @default(false)
+  currencyCode         String   @default("GHS")
+  currencySymbol       String   @default("₵")
+  currencyName         String   @default("Ghanaian Cedi")
+  country              String   @default("Ghana")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User? @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("user_setting")
+}
+
+model PasswordReset {
+  id        Int       @id @default(autoincrement())
+  user_id   Int
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("password_reset")
+}

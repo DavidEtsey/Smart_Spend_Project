@@ -1,0 +1,186 @@
+const prisma = require('./prisma.js');
+const { addMonths, diffInMonths } = require('../utils/dateCalc.js');
+
+/*  
+const normalizeBudgetInput = ( start_date, end_date, period ) => {
+  // Convert to Date objects immediately
+  let start = start_date ? new Date(start_date) : null;
+  let end = end_date ? new Date(end_date) : null;
+    
+  // Case 1: start + period → compute end_date
+  if (start && period && !end) {
+    end = addMonths(start, period);
+  }
+
+  // Case 2: start + end → compute period
+  if (start && end && !period) {
+    period = diffInMonths(start, end);
+  }
+
+  // Case 3: all provided → validate
+  if (start && end && period) {
+    const calculated = diffInMonths(start, end);
+
+    if (calculated !== period) {
+      // Option A: Trust period → recompute end
+      end = addMonths(start, period);
+    }
+  }
+
+  return {start_date:start, end_date:end, period };
+};
+*/
+
+
+const createBudget = async (user_id, category_id, amount_limit,month,year) => {
+  
+  const result = await prisma.budget.create({
+    data: {
+      category:{
+        connect: { category_id }
+      },
+      amount:amount_limit,
+      month,
+      year,
+      user: {
+        connect: { user_id }
+      }
+    },
+    select:{
+      category:{
+        select:{
+          name:true,
+          icon:true
+        }
+      },
+      amount:true,
+      month:true,
+      year:true
+    }
+  });
+  return {
+    name:result.category?.name,
+    icon:result.category?.icon,
+    amount:result.amount,
+    month: result.month,
+    year: result.year,
+  };
+};
+
+
+const getBudgets = async(user_id) => {
+  
+  const budgets = await prisma.budget.findMany({
+    where: {user_id},
+    include:{category:
+      {select:{icon:true,name:true}}}
+  });
+
+
+  const combined = await Promise.all(
+    budgets.map(async (budget) => {
+      const startDate = new Date(
+        budget.year,
+        budget.month - 1,
+        1,
+      );
+
+      const endDate = new Date(
+        budget.year,
+        budget.month,
+        1,
+      );
+    
+      const expenseTotal = await prisma.expense.aggregate({
+        where: {
+          user_id,
+          category_id: budget.category_id,
+          created_at: {
+            gte: startDate,
+            lt: endDate,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      });
+
+      return {
+        budget_idid: budget.budget_id,
+        category_id: budget.category_id,
+        amount_limit: budget.amount,
+        name: budget.category?.name || "Unknown",
+        icon: budget.category?.icon || "📦",
+        month: budget.month,
+        year: budget.year,
+        createdAt: budget.created_at,
+        spent: expenseTotal._sum.amount || 0,
+      };
+    }),
+  );
+
+  
+  return combined;
+};
+
+
+const updateBudget = async (budget_id, user_id, updates ) => {
+
+  const budget = await prisma.budget.findFirst({
+    where: { budget_id: Number(budget_id), user_id }
+  });
+
+  if (!budget) return null;
+
+  // Merges old from budget table and new data from user updates
+  const merged = {
+    start_date: updates.start_date ?? budget.start_date,
+    end_date: updates.end_date ?? budget.end_date,
+    period: updates.period ?? budget.period,
+  };
+
+  // Normalize (recalculate intelligently)
+  const normalized = normalizeBudgetInput(
+    merged.start_date,
+    merged.end_date,
+    merged.period
+  );
+
+  // Final update payload
+  const finalData = {
+    category: updates.category ?? budget.category,
+    amount_limit: updates.amount_limit ?? budget.amount_limit,
+    start_date: normalized.start_date,
+    end_date: normalized.end_date,
+    period: normalized.period,
+  };
+
+
+  return prisma.budget.update({
+    where: { budget_id: Number(budget_id) },
+    data: finalData
+  });
+  
+};
+
+
+const deleteBudget = async (budget_id, user_id) => {
+  
+  const budget = await prisma.budget.findFirst({
+    where: { budget_id: Number(budget_id), user_id }
+  });
+
+  if (!budget) return null;
+
+  return prisma.budget.delete({
+    where: { budget_id: Number(budget_id) }
+  });
+
+};
+
+module.exports = {
+  createBudget,
+  getBudgets,
+  updateBudget,
+  deleteBudget,
+};

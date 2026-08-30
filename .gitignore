@@ -80,3 +80,7 @@ prisma/*.db-journal
 !package-lock.json
 !yarn.lock
 !pnpm-lock.yaml
+
+
+# AI / experimental notebooks
+finalyear_frontend-project/notebook/

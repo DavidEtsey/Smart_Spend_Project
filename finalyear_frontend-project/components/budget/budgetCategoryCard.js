@@ -44,7 +44,7 @@ export default function BudgetCategoryCard({ budget, onPress }) {
                 justifyContent="center"
                 alignItems="center"
               >
-                <Text fontSize="$2xl">{budget.categoryIcon}</Text>
+                <Text fontSize="$2xl">{budget.icon}</Text>
               </Box>
 
               {/* Details */}
@@ -55,7 +55,7 @@ export default function BudgetCategoryCard({ budget, onPress }) {
                   fontSize="$md"
                   style={{ color: colors.text }}
                 >
-                  {budget.category}
+                  {budget.name}
                 </Text>
                 <Text
                   style={{ color: colors.subText }}

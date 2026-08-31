@@ -1,8 +1,5 @@
 import * as SecureStore from "expo-secure-store";
 
-/*
- * Single source of truth for the API base URL.
- */
 const DEFAULT_HOST = "http://172.20.10.3:5002";
 
 const ROOT = (process.env.EXPO_PUBLIC_API_URL || DEFAULT_HOST).replace(

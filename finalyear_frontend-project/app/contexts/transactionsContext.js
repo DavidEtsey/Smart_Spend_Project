@@ -1,9 +1,11 @@
 import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useAuth } from "./authContext";
 
 const TransactionContext = createContext();
 
 export default function TransactionProvider({ children }) {
+  const { isAuthenticated, authReady } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({
     income: 0,
@@ -89,9 +91,21 @@ export default function TransactionProvider({ children }) {
     }
   };
 
-  //FETCH AGAIN WHEN MONTH/YEAR CHANGES 
-  useEffect(() => { fetchTransactions(); }, 
-  [selectedMonth, selectedYear]); 
+  // Fetch only after auth has been confirmed
+  useEffect(() => {
+    if (!authReady || !isAuthenticated) {
+      setTransactions([]);
+      setSummary({
+        income: 0,
+        expense: 0,
+        balance: 0,
+        savings: 0,
+      });
+      return;
+    }
+
+    fetchTransactions();
+  }, [authReady, isAuthenticated, selectedMonth, selectedYear]);
   
   const allTransactions = useMemo(() => {
     return Array.isArray(transactions) ? transactions : [];

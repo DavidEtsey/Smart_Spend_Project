@@ -13,6 +13,7 @@ import Section from "../../components/section";
 import FormRow from "../../components/formRow";
 import NavItem from "../../components/navItem";
 import { useSettings } from "../contexts/settingsContext";
+import { useAuth } from "../contexts/authContext";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 function PressableScale({ children, onPress, style }) {
@@ -47,6 +48,18 @@ export default function SettingsScreen() {
     toggleInsights,
     toggleNotifications,
   } = useSettings();
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.replace("/(auth)/logIn");
+      console.log("User is loggged out")
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Logout Failed", "Unable to sign out right now.");
+    }
+  };
 
   return (
     <Box flex={1} bg={themeColors.card}>
@@ -262,7 +275,7 @@ export default function SettingsScreen() {
             icon="log-out"
             danger
             showChevron={false}
-            onPress={() => Alert.alert("Logged out")}
+            onPress={handleLogout}
             theme={themeColors}
           />
         </Box>

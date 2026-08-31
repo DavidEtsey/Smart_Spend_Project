@@ -3,10 +3,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "../helpers/formatCurrency";
 import { useSettings } from "./settingsContext";
 import { useTransactions } from "./transactionsContext";
+import { createBudget } from "../services/api";
+import { useAuth } from "./authContext";
 
-const BudgetContext = createContext();
+const BudgetContext = createContext(null);
 
 export default function BudgetProvider({ children }) {
+  const { isAuthenticated, authReady } = useAuth();
   const {
     selectedMonth,
     setSelectedMonth,
@@ -15,6 +18,7 @@ export default function BudgetProvider({ children }) {
     monthlyIncome,
     monthlyExpenseTransactions,
   } = useTransactions();
+
   const { settings } = useSettings();
 
   const [budgets, setBudgets] = useState([]);
@@ -47,20 +51,52 @@ export default function BudgetProvider({ children }) {
       );
     }
 
-    console.log("Budgets fetched:", result);
+    console.log("Budgets fetched:", result.data.length);
 
-    setBudgets(result.data || []);
+    const normalizedBudgets = (result.data || []).map((budget) => {
+      const createdDate = new Date(budget.createdAt);
+
+      return {
+        ...budget,
+
+        category_id: Number(budget.category_id),
+
+        amount_limit: Number(budget.amount_limit || 0),
+
+        spent: Number(budget.spent || 0),
+
+        remaining: Number(
+          budget.remaining ??
+          Number(budget.amount_limit || 0) - Number(budget.spent || 0),
+        ),
+
+        month: createdDate.getMonth() + 1,
+
+        year: createdDate.getFullYear(),
+      };
+    });
+    setBudgets(normalizedBudgets);
   } catch (error) {
     console.error("Fetch budgets error:", error);
   }
 };
+
+  useEffect(() => {
+    if (!authReady || !isAuthenticated) {
+      setBudgets([]);
+      return;
+    }
+
+    fetchBudgets();
+  }, [authReady, isAuthenticated]);
 
   // MONTHLY BUDGETS
 
   const monthlyBudgets = useMemo(() => {
     return budgets.filter(
       (budget) =>
-        budget.month === selectedMonth && budget.year === selectedYear,
+        budget.month === selectedMonth && 
+        budget.year === selectedYear,
     );
   }, [budgets, selectedMonth, selectedYear]);
 
@@ -83,14 +119,14 @@ export default function BudgetProvider({ children }) {
 
   const budgetSummary = useMemo(() => {
     return monthlyBudgets.map((budget) => {
-      const spent = monthlyExpenseTransactions
-        .filter((tx) => tx.category === budget.category)
-        .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+      const spent = Number(budget.spent || 0);
 
-      const remaining = budget.amount - spent;
+      const amount = Number(budget.amount_limit || 0);
+
+      const remaining = amount - spent;
 
       const percentage =
-        budget.amount === 0 ? 0 : (spent / budget.amount) * 100;
+        amount === 0 ? 0 : (spent / amount) * 100;
 
       let status = "good";
 
@@ -102,13 +138,17 @@ export default function BudgetProvider({ children }) {
 
       return {
         ...budget,
+
+        // Convenient frontend names
+        amount,
         spent,
         remaining,
         percentage,
+
         status,
       };
     });
-  }, [monthlyBudgets, monthlyExpenseTransactions]);
+  }, [monthlyBudgets]);
 
   // TOTAL SPENT
   const totalBudgetSpent = useMemo(() => {
@@ -145,7 +185,7 @@ export default function BudgetProvider({ children }) {
     if (exceeded) {
       return {
         title: "Budget Alert",
-        message: `${exceeded.category} budget exceeded by ${formatCurrency(
+        message: `${exceeded.name} budget exceeded by ${formatCurrency(
           Math.abs(exceeded.remaining),
           settings.currency,
         )}.`,
@@ -159,7 +199,7 @@ export default function BudgetProvider({ children }) {
     if (warning) {
       return {
         title: "Budget Warning",
-        message: `${warning.category} budget is ${Math.round(
+        message: `${warning.name} budget is ${Math.round(
           warning.percentage,
         )}% used.`,
         type: "warning",
@@ -192,29 +232,135 @@ export default function BudgetProvider({ children }) {
 
   // CREATE
 
-  const addBudget = (budget) => {
-    const exists = budgets.some(
-      (item) =>
-        item.category_id === budget.category_id &&
-        item.name === budget.name,
-        item.month === budget.month &&
-        item.year === budget.year,
-    );
+ //CREATE BUDGET This function receives the category and amount from AddBudgetModal.
+ 
+  const addBudget = async (budget) => {
+    try {
+      /*
+      * Validate the values before calling backend.
+      */
+      if (!budget.category_id) {
+        throw new Error("Category is required.");
+      }
 
-    if (exists) {
-      throw new Error("A budget already exists for this category this month.");
+      const amount = Number(budget.amount-limit);
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        throw new Error("Budget amount must be greater than zero.");
+      }
+
+      /*
+      * Prevent duplicate budget for the same
+      * category/month/year.
+      */
+      const exists = budgets.some(
+        (item) =>
+          Number(item.category_id) === Number(budget.category_id) &&
+          Number(item.month) === Number(budget.month) &&
+          Number(item.year) === Number(budget.year),
+      );
+
+      if (exists) {
+        throw new Error(
+          "A budget already exists for this category this month.",
+        );
+      }
+
+      //SEND REQUEST TO BACKEND
+      /* Example:
+      {"category_id": 8,"amount_limit": 100}
+      */
+      const result = await createBudget({
+        category_id: budget.category_id,
+        amount_limit: amount,
+      });
+
+      /*
+      * Backend response:
+      *
+      * {
+      *   "message": "Budget created successfully",
+      *   "data": {
+      *     "name": "Entertainment",
+      *     "icon": "🎬",
+      *     "amount": "100"
+      *   }
+      * }
+      */
+
+      const createdBudget = result?.data;
+
+      if (!createdBudget) {
+        throw new Error(
+          "Budget was created but no budget data was returned.",
+        );
+      }
+
+      /*
+      * Convert backend response into the format
+      * already expected by your budget UI.
+      */
+      const newBudget = {
+        ...budget,
+
+        category_id: Number(budget.category_id),
+
+        name:
+          createdBudget.name ||
+          budget.name ||
+          budget.category,
+
+        category:
+          createdBudget.name ||
+          budget.category,
+
+        icon:
+          createdBudget.icon ||
+          budget.icon ||
+          budget.categoryIcon,
+
+        categoryIcon:
+          createdBudget.icon ||
+          budget.categoryIcon,
+
+        amount: Number(
+          createdBudget.amount ?? amount,
+        ),
+
+        spent: 0,
+
+        month:
+          Number(budget.month) ||
+          selectedMonth,
+
+        year:
+          Number(budget.year) ||
+          selectedYear,
+      };
+
+      /*
+      * Add the successfully-created budget
+      * to local state so the UI updates immediately.
+      */
+      setBudgets((prev) => [
+        ...prev,
+        newBudget,
+      ]);
+
+      /*
+      * Return the backend response to the caller.
+      */
+      return result;
+
+    } catch (error) {
+      console.error(
+        "Create budget error:",
+        error,
+      );
+
+      throw error;
     }
-
-    setBudgets((prev) => [
-    ...prev,
-    {
-      ...budget,
-      amount: Number(budget.amount || 0),
-      spent: Number(budget.spent || 0),
-    },
-  ]);
   };
-
   // UPDATE
   const updateBudget = (updatedBudget) => {
     setBudgets((prev) =>
@@ -241,9 +387,6 @@ export default function BudgetProvider({ children }) {
     setBudgets([]);
   };
 
-  useEffect(() => {
-    fetchBudgets();
-  }, []);
 
   // CONTEXT VALUE
   const value = useMemo(

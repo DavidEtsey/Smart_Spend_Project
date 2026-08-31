@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Box, HStack, Text, VStack } from "@gluestack-ui/themed";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 import {
   ActivityIndicator,
   Alert,
@@ -142,17 +143,15 @@ export default function AddBudgetModal({ visible, onClose }) {
   /*
    * Check whether a category already has a budget.
    */
-  const isCategoryUsed = (category) => {
-    const normalizedCategory = category.toLowerCase();
-
-    // Existing saved budget
+  const isCategoryUsed = (categoryId) => {
+  // Existing saved budget
     const existsInSavedBudgets = monthlyBudgets.some(
-      (budget) => budget.category?.toLowerCase() === normalizedCategory,
+      (budget) => Number(budget.category_id) === Number(categoryId)
     );
 
     // Budget waiting to be saved
     const existsInPendingBudgets = pendingBudgets.some(
-      (budget) => budget.category?.toLowerCase() === normalizedCategory,
+      (budget) => Number(budget.category_id) === Number(categoryId)
     );
 
     return existsInSavedBudgets || existsInPendingBudgets;
@@ -162,12 +161,12 @@ export default function AddBudgetModal({ visible, onClose }) {
    * Add one budget to the temporary list.
    */
   const handleAddBudget = () => {
-    if (!selectedCategory) {
-      Alert.alert("Category Required", "Please select a category.");
-      return;
-    }
+  if (!selectedCategory) {
+    Alert.alert("Category Required", "Please select a category.");
+    return;
+  }
 
-    const numericAmount = Number(amount);
+  const numericAmount = Number(amount);
 
     if (!amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid Amount", "Please enter a valid budget amount.");
@@ -177,15 +176,11 @@ export default function AddBudgetModal({ visible, onClose }) {
     if (isCategoryUsed(selectedCategory.category_id)) {
       Alert.alert(
         "Category Already Used",
-        `${selectedCategory.category_id} already has a budget for this month.`,
+        `${selectedCategory.category} already has a budget for this month.`
       );
       return;
     }
 
-    /*
-     * How much is available before adding
-     * this new budget.
-     */
     const remainingBeforeThisBudget = availableIncome - pendingTotal;
 
     if (numericAmount > remainingBeforeThisBudget) {
@@ -193,15 +188,15 @@ export default function AddBudgetModal({ visible, onClose }) {
         "Budget Exceeded",
         `Only ${formatCurrency(
           Math.max(remainingBeforeThisBudget, 0),
-          settings.currency,
-        )} is available for another budget.`,
+          settings.currency
+        )} is available for another budget.`
       );
       return;
     }
 
     const newBudget = {
       category_id: selectedCategory.category_id,
-      category:selectedCategory.name,
+      category: selectedCategory.category,
       categoryIcon: selectedCategory.icon,
       categoryColor: selectedCategory.color,
       amount: numericAmount,
@@ -216,17 +211,17 @@ export default function AddBudgetModal({ visible, onClose }) {
     setAmount("");
   };
 
-  /*
-   * Remove a pending budget.
-   */
-  const handleRemoveBudget = (index) => {
-    setPendingBudgets((prev) => prev.filter((_, i) => i !== index));
+    /*
+    * Remove a pending budget.
+    */
+    const handleRemoveBudget = (index) => {
+      setPendingBudgets((prev) => prev.filter((_, i) => i !== index));
   };
 
   /*
    * Save all pending budgets.
    */
-  const handleSaveAll = async() => {
+  const handleSaveAll = async () => {
     if (pendingBudgets.length === 0) {
       Alert.alert("No Budgets", "Please add at least one budget.");
       return;
@@ -235,7 +230,7 @@ export default function AddBudgetModal({ visible, onClose }) {
     if (pendingTotal > availableIncome) {
       Alert.alert(
         "Budget Exceeded",
-        "The budgets exceed your available monthly income.",
+        "The budgets exceed your available monthly income."
       );
       return;
     }
@@ -243,30 +238,34 @@ export default function AddBudgetModal({ visible, onClose }) {
     try {
       for (const budget of pendingBudgets) {
         await addBudget({
-          category_id: budget.categoryId,
+          category_id: budget.category_id,
           amount_limit: budget.amount,
-          category: budget.category,
-          categoryIcon: budget.categoryIcon,
-          categoryColor: budget.categoryColor,
-          month: budget.month,
-          year: budget.year,
         });
       }
-      
 
+      Alert.alert(
+        "Budgets Saved",
+        `${pendingBudgets.length} budget${
+          pendingBudgets.length > 1 ? "s" : ""
+        } saved successfully.`
+      );
+
+      // Clear pending budgets
       setPendingBudgets([]);
       setSelectedCategory(null);
       setAmount("");
 
+      // Close modal
       onClose();
     } catch (error) {
+      console.error("Save All Budgets error:", error);
+
       Alert.alert(
         "Unable to Save",
-        error?.message || "Something went wrong while saving the budgets.",
+        error?.message || "Something went wrong while saving the budgets."
       );
     }
   };
-
   /*
    * Close without saving pending budgets.
    */

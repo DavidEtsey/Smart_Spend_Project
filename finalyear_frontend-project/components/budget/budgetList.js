@@ -35,7 +35,9 @@ export default function BudgetList({ onBudgetPress }) {
   return (
     <FlatList
       data={budgetSummary}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item, index) =>
+        `${item.category_id}-${item.createdAt}-${index}`
+      }
       scrollEnabled={false}
       ListHeaderComponent={
         <Box mx="$5" mt="$6">
@@ -51,7 +53,7 @@ export default function BudgetList({ onBudgetPress }) {
       renderItem={({ item }) => (
         <BudgetCategoryCard
           budget={item}
-          onPress={() => onBudgetPress?.(item)}
+          //onPress={() => onBudgetPress?.(item)}
         />
       )}
       contentContainerStyle={{

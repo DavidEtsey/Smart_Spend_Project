@@ -13,13 +13,15 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 import { Alert } from "react-native";
+import { useAuth } from "../contexts/authContext";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function Login() {
+  const { signIn } = useAuth();
+
   // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,10 +71,10 @@ export default function Login() {
         throw new Error("Authentication token was not received.");
       }
 
-      await SecureStore.setItemAsync("accessToken", token);
-      if (data.user) {
-        await SecureStore.setItemAsync("user", JSON.stringify(data.user));
-      }
+      await signIn({
+        token,
+        userData: data.user || null,
+      });
 
       console.log("Login successful.");
       router.replace("/(tabs)/home");

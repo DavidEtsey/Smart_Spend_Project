@@ -854,8 +854,8 @@ export default function AddTransaction() {
       } else {
         url =
           type === "income"
-            ? `${API_URL}/income/addIncome`
-            : `${API_URL}/expenses/create`;
+            ? `${API_URL}/api/income/addIncome`
+            : `${API_URL}/api/expenses/create`;
 
         body = {
           amount:

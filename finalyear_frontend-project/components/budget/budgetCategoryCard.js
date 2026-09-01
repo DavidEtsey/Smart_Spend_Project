@@ -11,9 +11,9 @@ import { formatCurrency } from "../../app/helpers/formatCurrency";
 
 
 export default function BudgetCategoryCard({ budget, onPress }) {
-   const { colors } = useAppTheme();
-   const { settings } = useSettings();
-  const percentage = Math.min(budget.percentage, 100);
+  const { colors } = useAppTheme();
+  const { settings } = useSettings();
+  const percentage = Math.min(Math.max(parseFloat(budget.progress) || 0, 0), 100);
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function BudgetCategoryCard({ budget, onPress }) {
                 w={50}
                 h={50}
                 style={{
-                  backgroundColor: colors.iconBg,
+                  backgroundColor: colors.icon,
                 }}
                 borderRadius="$xl"
                 justifyContent="center"
@@ -78,7 +78,7 @@ export default function BudgetCategoryCard({ budget, onPress }) {
                   <Box
                     h="$full"
                     width={`${percentage}%`}
-                    bg={budget.categoryColor}
+                    bg={budget.color ||"#85BB65"} 
                     borderRadius="$full"
                   />
                 </Box>

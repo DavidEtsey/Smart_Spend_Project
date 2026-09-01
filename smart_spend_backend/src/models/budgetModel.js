@@ -50,7 +50,8 @@ const createBudget = async (user_id, category_id, amount_limit,month,year) => {
       category:{
         select:{
           name:true,
-          icon:true
+          icon:true,
+          color:true
         }
       },
       amount:true,
@@ -61,6 +62,7 @@ const createBudget = async (user_id, category_id, amount_limit,month,year) => {
   return {
     name:result.category?.name,
     icon:result.category?.icon,
+    color:result.category?.color,
     amount:result.amount,
     month: result.month,
     year: result.year,
@@ -73,7 +75,7 @@ const getBudgets = async(user_id) => {
   const budgets = await prisma.budget.findMany({
     where: {user_id},
     include:{category:
-      {select:{icon:true,name:true}}}
+      {select:{icon:true,name:true,color:true}}}
   });
 
 
@@ -106,11 +108,12 @@ const getBudgets = async(user_id) => {
       });
 
       return {
-        budget_idid: budget.budget_id,
+        budget_id: budget.budget_id,
         category_id: budget.category_id,
         amount_limit: budget.amount,
         name: budget.category?.name || "Unknown",
         icon: budget.category?.icon || "📦",
+        color:budget.category?.color,
         month: budget.month,
         year: budget.year,
         createdAt: budget.created_at,

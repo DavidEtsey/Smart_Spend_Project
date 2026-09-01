@@ -65,6 +65,8 @@ export default function BudgetProvider({ children }) {
 
         spent: Number(budget.spent || 0),
 
+        color:budget.color || "No color",
+
         remaining: Number(
           budget.remaining ??
           Number(budget.amount_limit || 0) - Number(budget.spent || 0),
@@ -104,7 +106,7 @@ export default function BudgetProvider({ children }) {
 
   const allocatedBudget = useMemo(() => {
     return monthlyBudgets.reduce(
-      (sum, budget) => sum + Number(budget.amount || 0),
+      (sum, budget) => sum + Number(budget.amount_limit ?? budget.amount ?? 0),
       0,
     );
   }, [monthlyBudgets]);
@@ -236,30 +238,37 @@ export default function BudgetProvider({ children }) {
  
   const addBudget = async (budget) => {
     try {
-      /*
-      * Validate the values before calling backend.
-      */
+      //Validate Category
       if (!budget.category_id) {
         throw new Error("Category is required.");
       }
 
-      const amount = Number(budget.amount-limit);
+      //Get amount_limit from the form
+      const amount = Number(
+        budget.amount_limit ??
+          budget.amount ??
+          0,
+      );
 
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error("Budget amount must be greater than zero.");
       }
 
-      /*
-      * Prevent duplicate budget for the same
-      * category/month/year.
-      */
+
+      // Determine month/year
+      const budgetMonth =Number(budget.month) || Number(selectedMonth);
+
+      const budgetYear =Number(budget.year) || Number(selectedYear);
+
+      //Prevent duplicate budget
       const exists = budgets.some(
         (item) =>
-          Number(item.category_id) === Number(budget.category_id) &&
-          Number(item.month) === Number(budget.month) &&
-          Number(item.year) === Number(budget.year),
+          Number(item.category_id) ===
+            Number(budget.category_id) &&
+          Number(item.month) === budgetMonth &&
+          Number(item.year) === budgetYear
       );
-
+      
       if (exists) {
         throw new Error(
           "A budget already exists for this category this month.",
@@ -275,20 +284,10 @@ export default function BudgetProvider({ children }) {
         amount_limit: amount,
       });
 
-      /*
-      * Backend response:
-      *
-      * {
-      *   "message": "Budget created successfully",
-      *   "data": {
-      *     "name": "Entertainment",
-      *     "icon": "🎬",
-      *     "amount": "100"
-      *   }
-      * }
-      */
-
-      const createdBudget = result?.data;
+      const createdBudget = 
+        result?.data ??
+        result?.budget ??
+        result;
 
       if (!createdBudget) {
         throw new Error(
@@ -296,10 +295,12 @@ export default function BudgetProvider({ children }) {
         );
       }
 
-      /*
-      * Convert backend response into the format
-      * already expected by your budget UI.
-      */
+      // Backend returns amount as a string
+      const createdAmount = Number(
+        createdBudget.amount ?? amount
+      );
+
+
       const newBudget = {
         ...budget,
 
@@ -317,25 +318,31 @@ export default function BudgetProvider({ children }) {
         icon:
           createdBudget.icon ||
           budget.icon ||
-          budget.categoryIcon,
+          budget.categoryIcon||
+          "📊",
 
         categoryIcon:
           createdBudget.icon ||
-          budget.categoryIcon,
+          budget.categoryIcon||
+          "#16A34A",
 
         amount: Number(
           createdBudget.amount ?? amount,
         ),
 
+        amount_limit:createdAmount,
+
+        remaining:createdAmount,
+
         spent: 0,
 
         month:
           Number(budget.month) ||
-          selectedMonth,
+          budgetMonth,
 
         year:
           Number(budget.year) ||
-          selectedYear,
+          budgetYear,
       };
 
       /*

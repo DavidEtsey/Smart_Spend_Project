@@ -100,6 +100,7 @@ const budgetController = {
                     name : b.name,
                     icon: b.icon,
                     amount_limit: b.amount_limit,
+                    color:b.color,
                     spent: b.spent,
                     remaining,
                     progress: progress +"%",

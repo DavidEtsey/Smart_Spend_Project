@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Pressable } from "react-native";
 import { Box, Text } from "@gluestack-ui/themed";
 import Svg, { Circle } from "react-native-svg";
 import Animated, {
@@ -17,8 +16,7 @@ export default function BudgetRing({
   remaining = 0,
   budget = 0,
   size = 170,
-  strokeWidth = 14,
-  onCreateBudget,
+  strokeWidth = 14
 }) {
   const { settings } = useSettings();
   const radius = (size - strokeWidth) / 2;
@@ -27,7 +25,12 @@ export default function BudgetRing({
   const animatedProgress = useSharedValue(0);
 
   useEffect(() => {
-    animatedProgress.value = withTiming(Math.min(progress, 100), {
+    const safeProgress = Math.max(
+      0,
+      Math.min(Number(progress) || 0, 100)
+    );
+
+    animatedProgress.value = withTiming(safeProgress, {
       duration: 900,
     });
   }, [progress]);
@@ -37,9 +40,8 @@ export default function BudgetRing({
       circumference - (circumference * animatedProgress.value) / 100,
   }));
 
-  const progressColor =
-    progress >= 100 ? "#EF4444" : progress >= 80 ? "#F59E0B" : "#16A34A";
-
+  const progressColor = "#16A34A";
+  
   return (
     <Box alignItems="center" justifyContent="center">
       <Svg width={size} height={size}>
@@ -61,7 +63,7 @@ export default function BudgetRing({
           strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"
-          strokeDasharray={circumference}
+          strokeDasharray={`${circumference} ${circumference}`}
           animatedProps={animatedProps}
           rotation="-90"
           origin={`${size / 2}, ${size / 2}`}

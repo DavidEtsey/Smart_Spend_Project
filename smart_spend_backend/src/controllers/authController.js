@@ -171,7 +171,7 @@ const authController = {
 
             const result = await authModel.forgotPassword(email);
 
-            res.status(201).json({ message: "If that email exists, a reset code has been sent." });
+            res.status(200).json({ message: "If that email exists, a reset code has been sent." });
 
         } catch (error) {
             console.error('Error in forgotPassword:', error);
@@ -181,9 +181,13 @@ const authController = {
 
     async resetPassword(req,res,next){
         try {
-            const { email, reset_code} = req.body;
+            const { email, reset_code, new_password } = req.body;
 
-            await authModel.resetPassword(email, reset_code);
+            if (!email || !reset_code || !new_password) {
+                return res.status(400).json({ error: 'Email, reset code, and new password are required' });
+            }
+
+            await authModel.resetPassword(email, reset_code, new_password);
 
             res.json({ message: "Password reset successfully." });
 

@@ -9,13 +9,13 @@ exports.createExcel = async (transactions, period) => {
         { header: "Date", key: "date", width: 15 },
         { header: "Type", key: "type", width: 15 },
         { header: "Category", key: "category", width: 20 },
-        { header: "Amount", key: "amount", width: 15 },
         { header: "Currency", key: "currency", width: 12 },
+        { header: "Amount", key: "amount", width: 15 },
         { header: "Account", key: "account", width: 20 },
         { header: "Description", key: "description", width: 40 },
     ];
 
-    const title = `SmartSpend ${period.replace(/_/g, ' ')} Report`;
+    //const title = `SmartSpend ${period.replace(/_/g, ' ')} Report`;
     worksheet.insertRow(1, [title]);
     worksheet.mergeCells("A1:G1");
     const titleRow = worksheet.getRow(1);

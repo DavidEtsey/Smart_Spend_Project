@@ -1,23 +1,24 @@
-import axios from "axios";
+import { apiFetch } from "./api";
+
+const REPORT_PERIODS = {
+  thisMonth: "THIS_MONTH",
+  lastMonth: "LAST_MONTH",
+  thisYear: "THIS_YEAR",
+  lastYear: "LAST_YEAR",
+  all: "ALL_TRANSACTIONS",
+};
 
 export async function requestExcelReport({
-  startDate,
-  endDate,
   period,
-  recipientEmail,
 }) {
-  try {
-    const response = await axios.post("YOUR_BACKEND_URL/reports/export-excel", {
-      startDate,
-      endDate,
-      period,
-      recipientEmail,
-    });
+  const backendPeriod = REPORT_PERIODS[period];
 
-    return response.data;
-  } catch (error) {
-    console.log("Export Report Error:", error.response?.data || error.message);
-
-    throw error;
+  if (!backendPeriod) {
+    throw new Error("Invalid report period.");
   }
+
+  return apiFetch("/settings/reports/export-excel", {
+    method: "POST",
+    body: { period: backendPeriod },
+  });
 }

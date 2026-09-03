@@ -24,17 +24,8 @@ import {
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 
-//  TRUE FOR TESTING WITHOUT BACKEND
-//  FALSE WHEN BACKEND IS READY
-const USE_MOCK = true; // Change  to false when backend is ready
+import { forgotPassword } from "../../app/services/api";
 
-// API Configuration - Update this with your backend URL
-/*const API_URL = __DEV__
-  ? "http://localhost:5000/api" // Development
-  : "https://your-backend-url.com/api"; // Production
-*/
-
-const API_URL=process.env.EXPO_PUBLIC_API_URL;
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -48,207 +39,64 @@ export default function ForgotPassword() {
   const toast = useToast();
   const timerRef = useRef(null);
 
-  //  MOCK: Simulate sending reset code (for testing without backend)
-  const sendResetCodeMock = async (userEmail) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Generate a random 6-digit code
-    const generatedCode = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
-
-    console.log(`📧 [MOCK] Reset code for ${userEmail}: ${generatedCode}`);
-
-    // Store code for verification
-    if (typeof window !== "undefined") {
-      window._resetCode = generatedCode;
-      window._resetEmail = userEmail;
-    }
-
-    // Show the code in a toast for easy testing
-    toast.show({
-      placement: "top",
-      render: () => (
-        <Toast bg="$blue500" action="info">
-          <VStack space="xs">
-            <ToastTitle color="$white"> MOCK MODE</ToastTitle>
-            <ToastDescription color="$white">
-              Your verification code: {generatedCode}
-            </ToastDescription>
-          </VStack>
-        </Toast>
-      ),
-    });
-
-    return { success: true };
-  };
-
-  //  MOCK: Simulate verifying code (for testing without backend)
-  const verifyCodeMock = async (userEmail, code) => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    const storedCode = typeof window !== "undefined" ? window._resetCode : null;
-
-    if (storedCode === code) {
-      // Generate mock reset token
-      const mockResetToken = "mock-reset-token-" + Date.now();
-
-      if (typeof window !== "undefined") {
-        window._resetToken = mockResetToken;
-        window._resetEmail = userEmail;
-      }
-
-      return {
-        success: true,
-        resetToken: mockResetToken,
-        email: userEmail,
-      };
-    } else {
-      return {
-        success: false,
-        error: "Invalid verification code",
-      };
-    }
-  };
-
-  //  Request reset code from backend
   const sendResetCode = async (userEmail) => {
     setIsSendingCode(true);
 
     try {
-      //  If mock mode is enabled, use mock
-      if (USE_MOCK) {
-        const result = await sendResetCodeMock(userEmail);
-        if (result.success) {
-          if (typeof window !== "undefined") {
-            window._resetEmail = userEmail;
-          }
-          return { success: true };
-        }
-        return result;
-      }
+      await forgotPassword(userEmail);
 
-      // Real API call (when backend is ready)
-      const response = await fetch(`${API_URL}/auth/request-reset-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: userEmail }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Store email for later use
-        if (typeof window !== "undefined") {
-          window._resetEmail = userEmail;
-        }
-        return { success: true };
-      } else {
-        return { success: false, error: data.error };
-      }
+      return {
+        success: true,
+      };
     } catch (error) {
       console.error("Send code error:", error);
-      return { success: false, error: "Network error. Please try again." };
+
+      return {
+        success: false,
+        error: error.message || "Network error. Please try again.",
+      };
     } finally {
       setIsSendingCode(false);
     }
   };
 
-  // Step 2: Verify the code
-  const handleVerifyCode = async () => {
+  const handleVerifyCode = () => {
     if (!verificationCode || verificationCode.length !== 6) {
       toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Invalid Code</ToastTitle>
-              <ToastDescription color="$white">
-                Please enter the 6-digit verification code
-              </ToastDescription>
-            </VStack>
-          </Toast>
-        ),
-      });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      let result;
-
-      //  If mock mode is enabled, use mock verification
-      if (USE_MOCK) {
-        result = await verifyCodeMock(email, verificationCode);
-      } else {
-        // Real API call (when backend is ready)
-        const response = await fetch(`${API_URL}/auth/verify-reset-code`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-            code: verificationCode,
-          }),
-        });
-
-        result = await response.json();
-      }
-
-      if (result.success) {
-        // Store reset token for password reset
-        if (typeof window !== "undefined") {
-          window._resetToken = result.resetToken;
-          window._resetEmail = result.email;
-        }
-
-        setShowSuccessModal(true);
-
-        setTimeout(() => {
-          setShowSuccessModal(false);
-          // Navigate to create new password page
-          router.replace("/(auth)/createNewpassword");
-        }, 2000);
-      } else {
-        toast.show({
           placement: "top",
           render: () => (
             <Toast bg="$red500" action="error">
               <VStack space="xs">
-                <ToastTitle color="$white">Invalid Code</ToastTitle>
+                <ToastTitle color="$white">
+                    Invalid Code
+                </ToastTitle>
+
                 <ToastDescription color="$white">
-                  {result.error || "The verification code is incorrect"}
+                    Please enter the 6-digit verification code
                 </ToastDescription>
               </VStack>
             </Toast>
-          ),
-        });
-      }
-    } catch (error) {
-      console.error("Verify code error:", error);
-      toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Error</ToastTitle>
-              <ToastDescription color="$white">
-                Network error. Please try again.
-              </ToastDescription>
-            </VStack>
-          </Toast>
-        ),
+          )
       });
-    } finally {
-      setIsLoading(false);
-    }
+
+    return;
+  }
+
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+        setShowSuccessModal(false);
+
+        router.push({
+            pathname: "/(auth)/createNewpassword",
+            params: {
+                email,
+                reset_code: verificationCode
+            }
+        });
+    }, 1000);
   };
+
 
   const handleContinue = async () => {
     if (!email) {
@@ -299,9 +147,7 @@ export default function ForgotPassword() {
             <VStack space="xs">
               <ToastTitle color="$white">Code Sent!</ToastTitle>
               <ToastDescription color="$white">
-                {USE_MOCK
-                  ? " Mock mode: Check the blue toast for your code"
-                  : "A verification code has been sent to your email"}
+                "A verification code has been sent to your email"
               </ToastDescription>
             </VStack>
           </Toast>
@@ -348,6 +194,7 @@ export default function ForgotPassword() {
     if (!canResend) return;
 
     const result = await sendResetCode(email);
+
     if (result.success) {
       startTimer(60);
       toast.show({
@@ -357,9 +204,7 @@ export default function ForgotPassword() {
             <VStack space="xs">
               <ToastTitle color="$white">Code Resent!</ToastTitle>
               <ToastDescription color="$white">
-                {USE_MOCK
-                  ? " Check the blue toast for your new code"
-                  : "A new verification code has been sent"}
+                A new verification code has been sent
               </ToastDescription>
             </VStack>
           </Toast>
@@ -412,11 +257,6 @@ export default function ForgotPassword() {
                   ? "Enter your email to receive a verification code"
                   : "Enter the 6-digit code sent to your email"}
               </Text>
-              {USE_MOCK && showCodeInput && (
-                <Text size="xs" color="$amber600" textAlign="center">
-                  Check the blue toast for your verification code
-                </Text>
-              )}
             </VStack>
           </VStack>
 

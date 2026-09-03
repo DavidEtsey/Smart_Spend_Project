@@ -2,6 +2,7 @@ import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./authContext";
 import { getCategoryColor } from "../../constants/categoryColors";
+import { fetchTransactions as fetchTransactionsFromApi } from "../services/api";
 
 const TransactionContext = createContext();
 
@@ -19,31 +20,7 @@ export default function TransactionProvider({ children }) {
 
   const fetchTransactions = async () => {
     try {
-      const token = await SecureStore.getItemAsync("accessToken");
-
-      if (!token) {
-        console.log("No access token");
-        return;
-      }
-
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/dashboard/transactions/${selectedMonth}/${selectedYear}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          result.message || "Failed to fetch transactions"
-        );
-      }
+      const result = await fetchTransactionsFromApi(selectedMonth, selectedYear);
 
       console.log( "Transaction groups fetched:", Object.keys(result.transactions || {}).length + 1);
 
@@ -75,7 +52,7 @@ export default function TransactionProvider({ children }) {
           ? {
               color:
                 tx.color ||
-                getCategoryColor(categoryName),
+                getCategoryColor(tx.category || "Other"),
             }
           : {}),
       }))

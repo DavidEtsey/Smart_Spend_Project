@@ -1,4 +1,4 @@
-const express = require('express');
+ const express = require('express');
 const authRouter = express.Router();
 const verifyToken = require('../middleware/authMiddleware.js');
 const authController = require('../controllers/authController.js');
@@ -19,9 +19,10 @@ authRouter.get('/detailed_profile', verifyToken, authController.detailed_profile
 authRouter.put('/update_profile', verifyToken, updateProfileValidation, validate, authController.updateProfile);
 
 //Password routes
-authRouter.put('/createNewPassword',verifyToken,authController.createNewPassword);
 authRouter.post('/forgotPassword', authController.forgotPassword);
+authRouter.put('/createNewPassword',verifyToken,authController.createNewPassword);
 authRouter.post('/resetPassword', authController.resetPassword);
+
 
         
 module.exports = authRouter; 

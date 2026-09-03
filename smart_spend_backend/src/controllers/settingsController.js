@@ -1,5 +1,4 @@
 const reportService = require('../services/report.js');
-const verifyToken = require('../middleware/authMiddleware.js');
 const AppError = require('../utils/AppError.js');
 
 const settingsController = {
@@ -19,7 +18,7 @@ const settingsController = {
                 throw new AppError("Invalid period", 400);
             }
 
-            const result = await reportService.generateExcel(user_id, period);
+            await reportService.generateExcel(user_id, period);
 
             return res.status(200).json({
                 success:true,
@@ -27,11 +26,7 @@ const settingsController = {
             })
         } catch (error) {
             console.error("Export transaction error:", error);
-
-            return res.status(500).json({
-                success: false,
-                message: "Failed to export transactions"
-            });
+            return next(error);
         }
     }
 }

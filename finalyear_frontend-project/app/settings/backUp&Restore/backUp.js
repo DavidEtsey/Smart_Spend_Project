@@ -13,8 +13,7 @@ import { useBudgets } from "../../contexts/budgetContext";
 
 import { exportBackup } from "../../services/backupServices";
 import { restoreBackup } from "../../services/restoreServices";
-import { exportTransactionsToExcel } from "../../services/exportExcel";
-import { filterTransactions } from "../../services/filterTransactions";
+import { requestExcelReport } from "../../services/reportServices";
 
 import ExportTransactionsModal from "../../../components/exportReportmodal";
 
@@ -30,10 +29,6 @@ export default function BackupScreen() {
   const { budgets, restoreBudgets, resetBudgets } = useBudgets();
 
   const [exportModalVisible, setExportModalVisible] = useState(false);
-
-  // --------------------------------------------------
-  // BACKUP
-  // --------------------------------------------------
 
   const handleBackup = async () => {
     try {
@@ -157,11 +152,13 @@ This will replace your current data.`,
 
   const handleExportTransactions = async (period) => {
     try {
-      const filtered = filterTransactions(transactions, period);
-
-      await exportTransactionsToExcel(filtered, settings, period);
+      const result = await requestExcelReport({ period });
 
       setExportModalVisible(false);
+      Alert.alert(
+        "Export Requested",
+        result?.message || "Your Excel report has been sent to your email.",
+      );
     } catch (error) {
       Alert.alert(
         "Export Failed",

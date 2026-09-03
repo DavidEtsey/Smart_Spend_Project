@@ -14,6 +14,9 @@ export default function InsightCard() {
     return null;
   }
 
+  const getCategoryName = (budget) =>
+    budget?.category || budget?.name || "--";
+
   // Highest spending category
   const highestSpent =
     budgetSummary.length > 0
@@ -24,7 +27,7 @@ export default function InsightCard() {
   const nearLimit =
     budgetSummary.length > 0
       ? [...budgetSummary]
-          .filter((b) => b.percentage < 100)
+          //.filter((b) => b.percentage < 100)
           .sort((a, b) => b.percentage - a.percentage)[0]
       : null;
 
@@ -35,13 +38,12 @@ export default function InsightCard() {
       : null;
 
   // Money saved
-  
-    const saved = Math.max(allocatedBudget - totalBudgetSpent, 0);
+  const saved = Math.max(allocatedBudget - totalBudgetSpent, 0);
 
   const insights = [
     {
       title: "Highest Spending",
-      value: highestSpent?.category || "--",
+      value: getCategoryName(highestSpent),
       subtitle: highestSpent
         ? formatCurrency(highestSpent.spent, settings.currency)
         : "",
@@ -50,14 +52,14 @@ export default function InsightCard() {
     },
     {
       title: "Near Limit",
-      value: nearLimit?.category || "--",
+      value: getCategoryName(nearLimit),
       subtitle: nearLimit ? `${Math.round(nearLimit.percentage)}% used` : "",
       icon: "alert-triangle",
       color: "#F59E0B",
     },
     {
       title: "Best Managed",
-      value: bestManaged?.category || "--",
+      value: getCategoryName(bestManaged),
       subtitle: bestManaged
         ? `${Math.round(bestManaged.percentage)}% used`
         : "",

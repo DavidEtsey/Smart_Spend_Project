@@ -88,6 +88,16 @@ export async function fetchCategories(type) {
   return payload?.data || [];
 }
 
+export async function fetchTransactions(month, year) {
+  const payload = await apiFetch(`/dashboard/transactions/${month}/${year}`);
+  return payload;
+}
+
+export async function fetchBudgets() {
+  const payload = await apiFetch("/budgets/read");
+  return payload?.data || [];
+}
+
 export async function createBudget(category_id, amount_limit) {
   console.log("createBudget received:", 
     { category_id, 
@@ -139,16 +149,13 @@ export const fetchAnalytics = async () => {
       throw new Error("No access token found");
     }
 
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/dashboard/analytics`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${API_URL}/dashboard/analytics`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     const result = await response.json();
 
@@ -164,3 +171,37 @@ export const fetchAnalytics = async () => {
     throw error;
   }
 };
+
+export async function forgotPassword(email) {
+    if (!email) {
+      throw new Error("Email is required");
+    }
+
+    return apiFetch("/auth/user/forgotPassword", {
+        method: "POST",
+        body: {
+            email: email.trim().toLowerCase()
+        }
+    });
+}
+
+export async function resetPassword(
+  email,
+  reset_code,
+  new_password
+) {
+    if (!email || !reset_code || !new_password) {
+        throw new Error(
+          "Email, reset code, and new password are required"
+        );
+    }
+
+    return apiFetch("/auth/user/resetPassword", {
+        method: "POST",
+        body: {
+          email: email.trim().toLowerCase(),
+          reset_code,
+          new_password
+        }
+    });
+}

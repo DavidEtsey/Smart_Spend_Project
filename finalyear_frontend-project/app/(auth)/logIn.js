@@ -16,8 +16,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Alert } from "react-native";
 import { useAuth } from "../contexts/authContext";
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+import { API_URL } from "../services/api";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -39,9 +38,9 @@ export default function Login() {
     }
     try {
       setLoading(true);
-      console.log("Login URL:", `${API_BASE_URL}/api/auth/user/login`);
+      console.log("Login URL:", `${API_URL}/auth/user/login`);
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/user/login`, {
+      const response = await fetch(`${API_URL}/auth/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

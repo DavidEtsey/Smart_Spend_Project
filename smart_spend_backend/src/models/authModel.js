@@ -189,15 +189,12 @@ const authModel = {
         });
 
         // Send email
-        await sendEmail(
-        email,
-        "Password Reset Code",
-        resetToken
-        );
-        
+        await sendEmail(email, "Password Reset Code", resetToken);
+
+        return { message: "If that email exists, a reset code has been sent." };
     },
 
-    async resetPassword(email, reset_code) {
+    async resetPassword(email, reset_code, new_password) {
 
         const user = await prisma.user.findUnique({
             where: { email },
@@ -233,7 +230,7 @@ const authModel = {
         const hashedPassword = await bcrypt.hash(new_password, 10);
 
         // Update password and mark token as used
-        await Promise.all([
+        await prisma.$transaction([
             prisma.user.update({
                 where: { email },
                 data: { password_hash: hashedPassword },
@@ -243,6 +240,8 @@ const authModel = {
                 data: { usedAt: new Date() },
             })
         ]);
+
+        return { message: "Password reset successfully." };
 
     }
 

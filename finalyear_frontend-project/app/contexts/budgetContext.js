@@ -1,9 +1,8 @@
-import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { formatCurrency } from "../helpers/formatCurrency";
 import { useSettings } from "./settingsContext";
 import { useTransactions } from "./transactionsContext";
-import { createBudget } from "../services/api";
+import { createBudget, fetchBudgets as fetchBudgetsFromApi } from "../services/api";
 import { useAuth } from "./authContext";
 
 const BudgetContext = createContext(null);
@@ -24,42 +23,19 @@ export default function BudgetProvider({ children }) {
   const [budgets, setBudgets] = useState([]);
 
   const fetchBudgets = async () => {
-  try {
-    const token = await SecureStore.getItemAsync("accessToken");
+    try {
+      const data = await fetchBudgetsFromApi();
+      console.log("Budgets fetched:", data.length);
 
-    if (!token) {
-      console.log("No access token");
-      return;
-    }
-
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/budgets/read`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      },
-    );
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        result.message || "Failed to fetch budgets.",
-      );
-    }
-
-    console.log("Budgets fetched:", result.data.length);
-
-    const normalizedBudgets = (result.data || []).map((budget) => {
+      const normalizedBudgets = data.map((budget) => {
       const createdDate = new Date(budget.createdAt);
 
       return {
         ...budget,
 
         category_id: Number(budget.category_id),
+
+        category: budget.category || budget.name,
 
         amount_limit: Number(budget.amount_limit || 0),
 
@@ -77,11 +53,11 @@ export default function BudgetProvider({ children }) {
         year: createdDate.getFullYear(),
       };
     });
-    setBudgets(normalizedBudgets);
-  } catch (error) {
-    console.error("Fetch budgets error:", error);
-  }
-};
+      setBudgets(normalizedBudgets);
+    } catch (error) {
+      console.error("Fetch budgets error:", error);
+    }
+  };
 
   useEffect(() => {
     if (!authReady || !isAuthenticated) {
@@ -261,7 +237,6 @@ export default function BudgetProvider({ children }) {
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error("Budget amount must be greater than zero.");
       }
-
 
       // Determine month/year
       const budgetMonth =Number(budget.month) || Number(selectedMonth);

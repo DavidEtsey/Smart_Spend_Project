@@ -23,30 +23,30 @@ import {
   useToast,
   VStack,
 } from "@gluestack-ui/themed";
-import { router } from "expo-router";
+import { useLocalSearchParams,router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+
+import { resetPassword } from "../../app/services/api";
 
 // API Configuration
 
-const API_URL = __DEV__
-  ? "http://172.20.10.3:5000/api" // Development
-  : "https://your-backend-url.com/api"; // Production
-
-const DEMO_MODE = false;
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function CreateNewPassword() {
+  const { email, reset_code } = useLocalSearchParams();
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [email, setEmail] = useState("");
-  const [resetToken, setResetToken] = useState("");
+ 
 
   const toast = useToast();
   const autoCloseTimerRef = useRef(null);
 
+  /*
   // reset data from global storage
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -78,121 +78,135 @@ export default function CreateNewPassword() {
       }
     }
   }, []);
+  */
 
   const handleCreatePassword = async () => {
-    // Basic validation
     if (!newPassword || !confirmPassword) {
-      toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Error</ToastTitle>
-              <ToastDescription>Please fill in all fields</ToastDescription>
-            </VStack>
-          </Toast>
-        ),
-      });
-      return;
+        toast.show({
+            placement: "top",
+            render: () => (
+                <Toast bg="$red500" action="error">
+                    <VStack space="xs">
+                        <ToastTitle color="$white">
+                            Error
+                        </ToastTitle>
+
+                        <ToastDescription color="$white">
+                            Please fill in all fields
+                        </ToastDescription>
+                    </VStack>
+                </Toast>
+            )
+        });
+
+        return;
     }
 
     if (newPassword.length < 8) {
-      toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Error</ToastTitle>
-              <ToastDescription color="$white">
-                Password must be at least 8 characters
-              </ToastDescription>
-            </VStack>
-          </Toast>
-        ),
-      });
-      return;
+        toast.show({
+            placement: "top",
+            render: () => (
+                <Toast bg="$red500" action="error">
+                    <VStack space="xs">
+                        <ToastTitle color="$white">
+                            Error
+                        </ToastTitle>
+
+                        <ToastDescription color="$white">
+                            Password must be at least 8 characters
+                        </ToastDescription>
+                    </VStack>
+                </Toast>
+            )
+        });
+
+        return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Error</ToastTitle>
-              <ToastDescription color="$white">
-                Passwords do not match
-              </ToastDescription>
-            </VStack>
-          </Toast>
-        ),
-      });
-      return;
+        toast.show({
+            placement: "top",
+            render: () => (
+                <Toast bg="$red500" action="error">
+                    <VStack space="xs">
+                        <ToastTitle color="$white">
+                            Error
+                        </ToastTitle>
+
+                        <ToastDescription color="$white">
+                            Passwords do not match
+                        </ToastDescription>
+                    </VStack>
+                </Toast>
+            )
+        });
+
+        return;
+    }
+
+    if (!email || !reset_code) {
+        toast.show({
+            placement: "top",
+            render: () => (
+                <Toast bg="$red500" action="error">
+                    <VStack space="xs">
+                        <ToastTitle color="$white">
+                            Reset Session Expired
+                        </ToastTitle>
+
+                        <ToastDescription color="$white">
+                            Please request a new password reset code.
+                        </ToastDescription>
+                    </VStack>
+                </Toast>
+            )
+        });
+
+        router.replace("/(auth)/forGotPassword");
+        return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email,
-          resetToken: resetToken,
-          newPassword: newPassword,
-        }),
-      });
+        await resetPassword(
+            email,
+            reset_code,
+            newPassword
+        );
 
-      const data = await response.json();
-      if (data.success) {
-        // Clear reset data
-        if (typeof window !== "undefined") {
-          delete window._resetToken;
-          delete window._resetEmail;
-        }
         setShowSuccessModal(true);
 
-        // Auto close modal and navigate to login after 3 seconds
         autoCloseTimerRef.current = setTimeout(() => {
-          setShowSuccessModal(false);
-          router.replace("/(auth)/logIn");
+            setShowSuccessModal(false);
+            router.replace("/(auth)/logIn");
         }, 3000);
-      } else {
-        toast.show({
-          placement: "top",
-          render: () => (
-            <Toast bg="$red500" action="error">
-              <VStack space="xs">
-                <ToastTitle color="$white"> Error</ToastTitle>
-                <ToastDescription color="$white">
-                  {data.error || "Failed to reset password"}
-                </ToastDescription>
-              </VStack>
-            </Toast>
-          ),
-        });
-      }
+
     } catch (error) {
-      console.error("Reset password error:", error);
-      toast.show({
-        placement: "top",
-        render: () => (
-          <Toast bg="$red500" action="error">
-            <VStack space="xs">
-              <ToastTitle color="$white">Error</ToastTitle>
-              <ToastDescription color="$white">
-                Network error. Please try again.
-              </ToastDescription>
-            </VStack>
-          </Toast>
-        ),
-      });
+        console.error("Reset password error:", error);
+
+        toast.show({
+            placement: "top",
+            render: () => (
+                <Toast bg="$red500" action="error">
+                    <VStack space="xs">
+                        <ToastTitle color="$white">
+                            Error
+                        </ToastTitle>
+
+                        <ToastDescription color="$white">
+                            {error.message || "Failed to reset password"}
+                        </ToastDescription>
+                    </VStack>
+                </Toast>
+            )
+        });
+
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
+
   const handleSignIn = () => {
     if (autoCloseTimerRef.current) {
       clearTimeout(autoCloseTimerRef.current);

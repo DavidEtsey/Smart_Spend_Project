@@ -4,6 +4,7 @@ import BudgetRing from "./budgetRing";
 import useAppTheme from "../../hooks/useAppTheme";
 import { useSettings } from "../../app/contexts/settingsContext";
 import { formatCurrency } from "../../app/helpers/formatCurrency";
+
 export default function BudgetOverviewCard({ onCreateBudget }) {
   const { settings } = useSettings();
   const { colors } = useAppTheme();
@@ -20,17 +21,13 @@ export default function BudgetOverviewCard({ onCreateBudget }) {
     <Box
       mx="$5"
       mt="$6"
+      borderRadius="$3xl"
+      p="$6"
       style={{
         backgroundColor: colors.card,
         borderColor: colors.border,
         borderWidth: 1,
       }}
-      borderRadius="$3xl"
-      p="$6"
-      shadowColor="$black"
-      shadowOpacity={0.08}
-      shadowRadius={15}
-      elevation={6}
     >
       <Box alignItems="center" justifyContent="center">
         <BudgetRing
@@ -39,68 +36,52 @@ export default function BudgetOverviewCard({ onCreateBudget }) {
           budget={allocatedBudget}
         />
       </Box>
-      <HStack space="md" justifyContent="space-between">
-        <Box
-          flex={1}
-          style={{
-            backgroundColor: colors.iconBg,
-          }}
-          borderRadius="$xl"
-          p="$4"
-          mt="$4"
-          alignItems="center"
-        >
+
+      <HStack mt="$6" alignItems="center">
+        <VStack flex={1} alignItems="center" gap="$1">
           <Text fontSize="$xs" style={{ color: colors.subText }}>
             Income
           </Text>
-
-          <Text mt="$1" fontSize="$md" fontWeight="$bold" color="$green700">
+          <Text fontSize="$md" fontWeight="$bold" style={{ color: "#15803D" }}>
             {formatCurrency(monthlyIncome, settings.currency)}
           </Text>
-        </Box>
+        </VStack>
 
         <Box
-          flex={1}
-          style={{
-            backgroundColor: colors.iconBg,
-          }}
-          borderRadius="$xl"
-          p="$4"
-          mt="$4"
-          alignItems="center"
-        >
+          width={1}
+          alignSelf="stretch"
+          my="$1"
+          style={{ backgroundColor: colors.border }}
+        />
+
+        <VStack flex={1} alignItems="center" gap="$1">
           <Text fontSize="$xs" style={{ color: colors.subText }}>
             Budgeted
           </Text>
-
-          <Text mt="$1" fontSize="$md" fontWeight="$bold" color="$blue700">
+          <Text fontSize="$md" fontWeight="$bold" style={{ color: "#1D4ED8" }}>
             {formatCurrency(allocatedBudget, settings.currency)}
           </Text>
-        </Box>
+        </VStack>
 
         <Box
-          flex={1}
-          style={{
-            backgroundColor: colors.iconBg,
-          }}
-          borderRadius="$xl"
-          p="$4"
-          mt="$4"
-          alignItems="center"
-        >
+          width={1}
+          alignSelf="stretch"
+          my="$1"
+          style={{ backgroundColor: colors.border }}
+        />
+
+        <VStack flex={1} alignItems="center" gap="$1">
           <Text fontSize="$xs" style={{ color: colors.subText }}>
             Balance
           </Text>
-
           <Text
-            mt="$1"
             fontSize="$md"
             fontWeight="$bold"
-            color={availableIncome >= 0 ? "$green700" : "$red600"}
+            style={{ color: availableIncome >= 0 ? "#15803D" : "#DC2626" }}
           >
             {formatCurrency(availableIncome, settings.currency)}
           </Text>
-        </Box>
+        </VStack>
       </HStack>
     </Box>
   );

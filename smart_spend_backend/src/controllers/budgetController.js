@@ -26,30 +26,6 @@ const budgetController = {
                 return res.status(400).json({ message: "Amount must be a greater than 0" });
             }
             
-            /*
-            //Validate date format
-            const start = new Date(start_date);
-            const end = end_date ? new Date(end_date) : null;
-            
-
-            if (isNaN(start.getTime()) || (end_date && isNaN(end.getTime()))) {
-                return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
-            }
-        
-            
-            // 4. Validate date logic
-            if (start_date > end_date) {
-                return res.status(400).json({ message: "Start date cannot be after end date" });
-            }
-            
-
-            // 5. Validate period (if provided)
-            if (period && (isNaN(period) || period <= 0)) {
-                return res.status(400).json({
-                    message: "Period must be a positive number"
-                });
-            }
-            */
 
             const budget = await budgetModel.createBudget(
                 req.user.user_id,

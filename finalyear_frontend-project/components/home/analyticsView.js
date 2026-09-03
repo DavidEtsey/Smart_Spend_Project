@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { ScrollView, Dimensions } from "react-native";
+import React, { useMemo,useEffect,useState } from "react";
+import { ScrollView, Dimensions,ActivityIndicator } from "react-native";
 import { Box, HStack, VStack, Text } from "@gluestack-ui/themed";
 import { PieChart, BarChart } from "react-native-gifted-charts";
 import { useTransactions } from "../../app/contexts/transactionsContext";
@@ -7,106 +7,151 @@ import useAppTheme from "../../hooks/useAppTheme";
 import { useSettings } from "../../app/contexts/settingsContext";
 import { formatCurrency } from "../../app/helpers/formatCurrency";
 
+import { getCategoryColor } from "../../constants/categoryColors";
+import { fetchAnalytics } from "../../app/services/api";
+
 const screenWidth = Dimensions.get("window").width;
-
-
-const CATEGORY_OPTIONS = {
-  expense: [
-    { icon: "🍔", name: "Food", color: "#f59e0b", bg: "#FFF8E7" },
-    { icon: "🚕", name: "Transport", color: "#f97316", bg: "#FFF3EB" },
-    { icon: "🏠", name: "Rent", color: "#64748b", bg: "#F1F5F9" },
-    { icon: "🛍️", name: "Shopping", color: "#8b5cf6", bg: "#F5F0FF" },
-    { icon: "🎬", name: "Entertainment", color: "#3b82f6", bg: "#EFF4FF" },
-    { icon: "🩺", name: "Health", color: "#06b6d4", bg: "#ECFEFF" },
-    { icon: "💡", name: "Utilities", color: "#eab308", bg: "#FFFBE6" },
-    { icon: "📚", name: "Education", color: "#0ea5e9", bg: "#EBF8FF" },
-    { icon: "✈️", name: "Travel", color: "#6366f1", bg: "#F0EEFF" },
-    { icon: "💝", name: "Gifts", color: "#ec4899", bg: "#FFF0F7" },
-    { icon: "🏋️", name: "Fitness", color: "#10b981", bg: "#ECFFF7" },
-    { icon: "☕", name: "Coffee", color: "#92400e", bg: "#FFF4EB" },
-    { icon: "🍺", name: "Drinks", color: "#f97316", bg: "#FFF3EB" },
-    { icon: "🍫", name: "Snacks", color: "#d97706", bg: "#FFF8E7" },
-    { icon: "📱", name: "Phone", color: "#3b82f6", bg: "#EFF4FF" },
-    { icon: "🔧", name: "Maintenance", color: "#6b7280", bg: "#F3F4F6" },
-    { icon: "📦", name: "Delivery", color: "#84cc16", bg: "#F4FFE6" },
-    { icon: "💄", name: "Beauty", color: "#ec4899", bg: "#FFF0F7" },
-    { icon: "🎉", name: "Social", color: "#8b5cf6", bg: "#F5F0FF" },
-  ],
-};
-
-const MONTHLY_DATA = [
-  { month: "Jan", income: 4200, expense: 2800 },
-  { month: "Feb", income: 4500, expense: 3100 },
-  { month: "Mar", income: 4800, expense: 3200 },
-  { month: "Apr", income: 4600, expense: 3400 },
-  { month: "May", income: 5000, expense: 3600 },
-  { month: "Jun", income: 4500, expense: 1800 },
-];
-
-const getCategoryDetails = (categoryName) => {
-  const allCategories = [...CATEGORY_OPTIONS.expense];
-  return (
-    allCategories.find((cat) => cat.name === categoryName) || {
-      icon: "📦",
-      name: categoryName || "Other",
-      color: "#6b7280",
-      bg: "#F3F4F6",
-    }
-  );
-};
 
 export default function AnalyticsView() {
   const { transactions } = useTransactions();
   const {colors} = useAppTheme();
   const { settings } = useSettings();
 
-  const { expensePieData, totalExpense, barChartData } = useMemo(() => {
-    const expenseTransactions = transactions.filter(
+  const [analytics, setAnalytics] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState(null);
+
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      try {
+        setAnalyticsLoading(true);
+        setAnalyticsError(null);
+
+        const result = await fetchAnalytics();
+
+        setAnalytics(result);
+      } catch (error) {
+        console.error("Analytics loading error:", error);
+
+        setAnalyticsError(
+          error?.message || "Unable to load analytics"
+        );
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    loadAnalytics();
+  }, []);
+
+  const { expensePieData, totalExpense} = useMemo(() => {
+    const safeTransactions = Array.isArray(transactions)
+    ? transactions
+    : [];
+
+    const expenseTransactions = safeTransactions.filter(
       (t) => t.type === "expense",
     );
 
     const categoryTotals = {};
+
     expenseTransactions.forEach((t) => {
       const category = t.category || "Other";
-      categoryTotals[category] =
-        (categoryTotals[category] || 0) + Number(t.amount);
-    });
+      const color = t.color||getCategoryColor(category);
 
-    const sortedCategories = Object.entries(categoryTotals).sort(
-      (a, b) => b[1] - a[1],
-    );
-    const totalExpense = Object.values(categoryTotals).reduce(
-      (sum, val) => sum + val,
-      0,
-    );
-
-    const expensePieData = sortedCategories.map(([category, amount], index) => {
-      const details = getCategoryDetails(category);
-      return {
-        value: amount,
-        color: details.color,
-        text: `${((amount / totalExpense) * 100).toFixed(0)}%`,
-        label: category,
-        focused: index === 0,
+      if (!categoryTotals[category]) {
+        categoryTotals[category] = {
+          amount: 0,
+          color,
       };
+      }
+
+      categoryTotals[category].amount +=
+        Number(t.amount) || 0;
     });
 
-    const barChartData = [];
-    MONTHLY_DATA.forEach((item) => {
-      barChartData.push({
-        value: item.income,
+    const sortedCategories = Object.entries(
+      categoryTotals
+    ).sort(
+      (a, b) => b[1].amount - a[1].amount
+    );
+    
+    const totalExpense = Object.values(
+      categoryTotals
+    ).reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+
+    const expensePieData = sortedCategories.map(
+      ([category, data], index) => {
+        return {
+          value: data.amount,
+          // COLOR COMES FROM TRANSACTION
+          color: data.color,
+
+          text:
+            totalExpense === 0
+              ? "0%"
+              : `${(
+                  (data.amount / totalExpense) *
+                  100
+                ).toFixed(0)}%`,
+
+          label: category,
+
+          focused: index === 0,
+        };
+      }
+    );
+
+  return { expensePieData, totalExpense, }; }, [transactions]);  
+   
+
+  const barChartData = useMemo(() => 
+    { if (
+      !analytics ||
+      !Array.isArray(
+        analytics.barChart
+      )
+    ) { 
+      return [];
+    } 
+      
+   const data = []; 
+  
+   analytics.barChart.forEach(
+    (item) => {
+      data.push({
+        value: Number(item.income) || 0, 
+        
         label: item.month,
+        
         frontColor: "#22c55e",
         spacing: 4,
       });
-      barChartData.push({
-        value: item.expense,
+      
+      data.push({
+        value:Number(item.expense) || 0,
         frontColor: "#ef4444",
       });
-    });
-
-    return { expensePieData, totalExpense, barChartData };
-  }, [transactions]);
+    }
+  ); 
+  return data; }, [analytics]);
+  const barChartMaxValue = useMemo(() =>{ 
+    if (barChartData.length === 0) { 
+      return 100; 
+    } 
+    
+    const highestValue = 
+    Math.max( 
+      ...barChartData.map( 
+        (item) => Number(item.value) || 0 ) ); 
+    return Math.max( 
+      highestValue * 1.2, 
+      100 
+    ); 
+  }, [barChartData]);
 
   return (
     <ScrollView
@@ -283,6 +328,17 @@ export default function AnalyticsView() {
               </Text>
             </HStack>
           </HStack>
+          
+
+          {/* LOADING */} 
+          {analyticsLoading && 
+          ( 
+          <Box py="$8" alignItems="center" justifyContent="center" > 
+            <ActivityIndicator size="small" color="#85BB65" /> 
+            <Text mt="$3" size="sm" style={{ color: colors.subText, }} > 
+              Loading analytics... 
+            </Text> 
+          </Box> )}
 
           <BarChart
             data={barChartData}
@@ -301,7 +357,10 @@ export default function AnalyticsView() {
               color: colors.subText,
             }}
             noOfSections={4}
-            maxValue={6000}
+            maxValue={Math.max(
+              ...barChartData.map((item) => item.value),
+              100
+            )}
             isAnimated={false}
           />
         </Box>

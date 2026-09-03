@@ -88,38 +88,79 @@ export async function fetchCategories(type) {
   return payload?.data || [];
 }
 
-export const createBudget = async (category_id, amount_limit) => {
-  const token = await SecureStore.getItemAsync("accessToken");
+export async function createBudget(category_id, amount_limit) {
+  console.log("createBudget received:", 
+    { category_id, 
+      amount_limit, 
+      category_id_type: typeof category_id, 
+      amount_limit_type: typeof amount_limit, 
+    });
 
-  if (!token) {
-    throw new Error("Authentication token not found.");
+  if (
+    category_id === undefined ||
+    category_id === null ||
+    amount_limit === undefined ||
+    amount_limit === null ||
+    amount_limit === ""
+  ) {
+    throw new ApiError("Category ID and Amount are required", 400);
   }
 
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_API_URL}/api/budgets/create`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        category_id: Number(category_id),
-        amount_limit: Number(amount_limit),
-      }),
-    },
-  );
+  const categoryId = Number(category_id);
+  const amount = Number(amount_limit);
 
-  const result = await response.json();
+  if (!Number.isInteger(categoryId) || categoryId <= 0) {
+    throw new ApiError("Invalid category ID.", 400);
+  }
 
-  console.log("Create budget status:", response.status);
-  console.log("Create budget response:", data);
-
-  if (!response.ok) {
-    throw new Error(
-      result.message || result.error || "Failed to create budget.",
+  if (!Number.isFinite(amount) || amount <= 0) {
+    throw new ApiError(
+      "Budget amount must be greater than zero.",
+      400
     );
   }
 
-  return result;
+  const payload = await apiFetch("/budgets/create", {
+    method: "POST",
+    body: {
+      category_id: categoryId,
+      amount_limit: amount,
+    },
+  });
+
+  return payload?.data || null;
+}
+
+export const fetchAnalytics = async () => {
+  try {
+    const token = await SecureStore.getItemAsync("accessToken");
+
+    if (!token) {
+      throw new Error("No access token found");
+    }
+
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/dashboard/analytics`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || "Failed to fetch analytics"
+      );
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Fetch analytics error:", error);
+    throw error;
+  }
 };

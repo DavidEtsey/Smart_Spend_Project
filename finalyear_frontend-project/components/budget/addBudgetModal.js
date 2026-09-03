@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { Box, HStack, Text, VStack } from "@gluestack-ui/themed";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTransactions } from "../../app/contexts/transactionsContext";
 
 import {
   ActivityIndicator,
@@ -18,57 +19,13 @@ import { formatCurrency } from "../../app/helpers/formatCurrency";
 import { fetchCategories } from "../../app/services/api";
 import useAppTheme from "../../hooks/useAppTheme";
 
-/*
- * Categories come from the API, but the `color` column is null for all of
- * them, so the chip tints are resolved here. The first eight values are the
- * ones this screen already used.
- */
-const CATEGORY_COLORS = {
-  Food: "#F97316",
-  Transport: "#3B82F6",
-  Shopping: "#EC4899",
-  Health: "#10B981",
-  Utilities: "#F59E0B",
-  Entertainment: "#8B5CF6",
-  Education: "#14B8A6",
-  Other: "#6B7280",
+import { getCategoryColor } from "../../constants/categoryColors";
 
-  Groceries: "#84CC16",
-  Rent: "#6366F1",
-  Travel: "#06B6D4",
-  Coffee: "#A16207",
-  Drinks: "#D946EF",
-  Snacks: "#F43F5E",
-  Fitness: "#EF4444",
-  Gifts: "#DB2777",
-};
-
-const FALLBACK_COLORS = [
-  "#F97316",
-  "#3B82F6",
-  "#EC4899",
-  "#10B981",
-  "#F59E0B",
-  "#8B5CF6",
-  "#14B8A6",
-  "#6366F1",
-];
-
-const colorForCategory = (name) => {
-  if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
-
-  // Stable per name, so a category keeps the same colour between renders.
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = (hash + name.charCodeAt(i)) % FALLBACK_COLORS.length;
-  }
-
-  return FALLBACK_COLORS[hash];
-};
 
 export default function AddBudgetModal({ visible, onClose }) {
   const { colors } = useAppTheme();
   const { settings } = useSettings();
+  const { transactions } = useTransactions();
 
   const {
     addBudget,
@@ -104,7 +61,7 @@ export default function AddBudgetModal({ visible, onClose }) {
           category_id: row.category_id,
           category: row.name,
           icon: row.icon || "📦",
-          color: row.color || colorForCategory(row.name),
+          color: row.color || getCategoryColor(row.name),
         })),
       );
     } catch (error) {
@@ -121,6 +78,25 @@ export default function AddBudgetModal({ visible, onClose }) {
       loadCategories();
     }
   }, [visible, loadCategories]);
+
+  
+  const expenseTotals = useMemo(() => {
+    const totals = {};
+
+    (transactions||[])
+      .filter((transaction) => transaction.type === "expense")
+      .forEach((transaction) => {
+        const categoryId = Number(transaction.category_id);
+
+        if (!categoryId) return;
+
+        totals[categoryId] =
+          (totals[categoryId] || 0) +
+          (Number(transaction.amount) || 0);
+      });
+
+    return totals;
+  }, [transactions]);
 
   /*
    * Total of budgets waiting to be saved.
@@ -198,7 +174,9 @@ export default function AddBudgetModal({ visible, onClose }) {
       category_id: selectedCategory.category_id,
       category: selectedCategory.category,
       categoryIcon: selectedCategory.icon,
-      categoryColor: selectedCategory.color,
+      categoryColor:
+        selectedCategory.color ||
+        getCategoryColor(selectedCategory.category),
       amount: numericAmount,
       month: selectedMonth,
       year: selectedYear,
@@ -529,13 +507,15 @@ export default function AddBudgetModal({ visible, onClose }) {
               }}
             >
               {categories.map((item) => {
-                const selected = selectedCategory?.category === item.category;
+                const selected = selectedCategory?.category_id === item.category_id;
 
-                const disabled = isCategoryUsed(item.category);
+                const disabled = isCategoryUsed(item.category_id);
+
+                const categoryColor = item.color || getCategoryColor(item.category);
 
                 return (
                   <Pressable
-                    key={item.category}
+                    key={item.category_id}
                     disabled={disabled}
                     onPress={() => setSelectedCategory(item)}
                     style={{
@@ -548,9 +528,9 @@ export default function AddBudgetModal({ visible, onClose }) {
                       borderRadius="$2xl"
                       borderWidth={2}
                       style={{
-                        borderColor: selected ? item.color : colors.border,
+                        borderColor: categoryColor,
                         backgroundColor: selected
-                          ? `${item.color}15`
+                          ? `${categoryColor}15`
                           : colors.card,
                       }}
                     >
@@ -565,6 +545,14 @@ export default function AddBudgetModal({ visible, onClose }) {
                         >
                           {item.category}
                         </Text>
+
+                        {selected && (
+                          <Feather
+                            name="check"
+                            size={16}
+                            color={categoryColor}
+                          />
+                        )}
 
                         {disabled && (
                           <Feather
@@ -599,9 +587,12 @@ export default function AddBudgetModal({ visible, onClose }) {
               placeholder={`${settings.currency.symbol} 0.00`}
               placeholderTextColor={colors.subText}
               style={{
-                borderWidth: 1,
+                borderWidth: 2,
                 borderColor: selectedCategory
-                  ? selectedCategory.color
+                  ? (
+                      selectedCategory.color ||
+                      getCategoryColor(selectedCategory.category)
+                    )
                   : colors.border,
                 backgroundColor: colors.iconBg,
                 color: colors.text,

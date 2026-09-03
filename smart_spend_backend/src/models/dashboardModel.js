@@ -35,7 +35,7 @@ const transactionDashboard = async (user_id, month, year) => {
         lt: endDate
       }
     },include: {
-      category: {select: { icon: true,name:true }}
+      category: {select: { icon: true,name:true}}
     }
   });
 
@@ -49,7 +49,7 @@ const transactionDashboard = async (user_id, month, year) => {
       }
     },
     include: {
-        category: {select: { icon: true,name:true }}
+        category: {select: { icon: true,name:true,color:true }}
       }
   });
 
@@ -93,6 +93,7 @@ const transactionDashboard = async (user_id, month, year) => {
         amount: e.amount,
         icon: e.category?.icon,
         category: e.category?.name,
+        color:e.category?.color,
         account: e.account,
         description: e.description,
         time: createdAt.toISOString().split("T")[0],

@@ -1,6 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./authContext";
+import { getCategoryColor } from "../../constants/categoryColors";
 
 const TransactionContext = createContext();
 
@@ -68,6 +69,15 @@ export default function TransactionProvider({ children }) {
 
         // Normalize amount
         amount: Number(tx.amount || 0),
+
+        // Category colors are only needed for expenses
+        ...(tx.type === "expense"
+          ? {
+              color:
+                tx.color ||
+                getCategoryColor(categoryName),
+            }
+          : {}),
       }))
       .sort(
         (a, b) =>
@@ -190,9 +200,26 @@ export default function TransactionProvider({ children }) {
 
   
   const addTransaction = (tx) => {
-    setTransactions((prev) => { 
-      const safePrev = Array.isArray(prev) ? prev : [];
-      return [tx, ...safePrev]; 
+    const transactionWithColor =
+      tx.type === "expense"
+        ? {
+            ...tx,
+            color:
+              tx.color ||
+              getCategoryColor(
+                tx.category || "Other"
+              ),
+          }
+        : tx;
+
+    setTransactions((prev) => {
+      const safePrev =
+        Array.isArray(prev) ? prev : [];
+
+      return [
+        transactionWithColor,
+        ...safePrev,
+      ];
     });
   };
 
@@ -207,19 +234,53 @@ export default function TransactionProvider({ children }) {
 
  
   const editTransaction = (updatedTx) => {
+    const transactionWithColor =
+      updatedTx.type === "expense"
+        ? {
+            ...updatedTx,
+            color:
+              updatedTx.color ||
+              getCategoryColor(
+                updatedTx.category || "Other"
+              ),
+          }
+        : updatedTx;
+
     setTransactions((prev) => {
-      const safePrev = Array.isArray(prev) ? prev : [];
+      const safePrev =
+        Array.isArray(prev) ? prev : [];
 
       return safePrev.map((tx) =>
-        tx.id === updatedTx.id ? updatedTx : tx );
+        tx.id === transactionWithColor.id
+          ? transactionWithColor
+          : tx
+      );
     });
-    
   };
   
   const restoreTransactions = (newTransactions) => {
-    setTransactions(
-      Array.isArray(newTransactions) ? newTransactions : []
-    );
+    if (!Array.isArray(newTransactions)) {
+      setTransactions([]);
+      return;
+    }
+
+    const transactionsWithColors =
+      newTransactions.map((tx) => {
+        if (tx.type !== "expense") {
+          return tx;
+        }
+
+        return {
+          ...tx,
+          color:
+            tx.color ||
+            getCategoryColor(
+              tx.category || "Other"
+            ),
+        };
+      });
+
+    setTransactions(transactionsWithColors);
   };
 
   const resetTransactions = () => {

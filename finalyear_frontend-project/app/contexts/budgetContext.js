@@ -239,8 +239,16 @@ export default function BudgetProvider({ children }) {
   const addBudget = async (budget) => {
     try {
       //Validate Category
-      if (!budget.category_id) {
+      if (
+        !budget.category_id ||
+        budget?.category_id === null) 
+        {
         throw new Error("Category is required.");
+      }
+
+      const categoryId = Number(budget.category_id);
+      if (!Number.isInteger(categoryId) || categoryId <= 0) {
+        throw new Error("Invalid category.");
       }
 
       //Get amount_limit from the form
@@ -275,14 +283,20 @@ export default function BudgetProvider({ children }) {
         );
       }
 
+      console.log("Creating budget:", {
+        category_id: categoryId,
+        amount_limit: amount,
+      });
+
       //SEND REQUEST TO BACKEND
       /* Example:
       {"category_id": 8,"amount_limit": 100}
       */
-      const result = await createBudget({
-        category_id: budget.category_id,
-        amount_limit: amount,
-      });
+      const result = await createBudget(
+        categoryId,
+        amount,
+      );
+      console.log("Budget created:", result);
 
       const createdBudget = 
         result?.data ??
@@ -304,7 +318,7 @@ export default function BudgetProvider({ children }) {
       const newBudget = {
         ...budget,
 
-        category_id: Number(budget.category_id),
+        category_id: categoryId,
 
         name:
           createdBudget.name ||

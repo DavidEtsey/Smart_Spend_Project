@@ -29,13 +29,16 @@ import useAppTheme from "../../hooks/useAppTheme";
 import { useBudgets } from "../contexts/budgetContext";
 import { useSettings } from "../contexts/settingsContext";
 import { useTransactions } from "../contexts/transactionsContext";
+
 export default function Home() {
   const { colors } = useAppTheme();
   const { settings } = useSettings();
   const [activeTab, setActiveTab] = useState("transactions");
   const [searchText, setSearchText] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const translateY = useSharedValue(0);
   const scale = useSharedValue(1);
+
   useEffect(() => {
     translateY.value = withRepeat(withTiming(-8, { duration: 1500 }), -1, true);
   }, []);
@@ -45,19 +48,15 @@ export default function Home() {
       transform: [{ translateY: translateY.value }, { scale: scale.value }],
     };
   });
-  const openAdd = () => {
-    scale.value = withSpring(0.85, {
-      damping: 10,
-    });
 
+  const openAdd = () => {
+    scale.value = withSpring(0.85, { damping: 10 });
     setTimeout(() => {
       scale.value = withSpring(1);
     }, 100);
-
     router.push("trans");
   };
 
-  const [showSearch, setShowSearch] = useState(false);
   const {
     filteredTransactions,
     deleteTransaction,
@@ -65,23 +64,22 @@ export default function Home() {
     setSelectedMonth,
     selectedYear,
     setSelectedYear,
-    totals
+    totals,
   } = useTransactions();
 
   const { budgetAssistant } = useBudgets();
 
-  const displayTransactions = Array.isArray(filteredTransactions)? 
-  filteredTransactions.filter((tx) => {
-    const query = searchText.trim().toLowerCase();
-
-    if (!query) {
-      return true;
-    } 
-    return ( (tx.category || "")
-    .toLowerCase() .includes(query) || (tx.description || "")
-    .toLowerCase() .includes(query) || String(tx.amount || "")
-    .includes(query) ); })
-  :[];
+  const displayTransactions = Array.isArray(filteredTransactions)
+   ? filteredTransactions.filter((tx) => {
+        const query = searchText.trim().toLowerCase();
+        if (!query) return true;
+        return (
+          (tx.category || "").toLowerCase().includes(query) ||
+          (tx.description || "").toLowerCase().includes(query) ||
+          String(tx.amount || "").includes(query)
+        );
+      })
+    : [];
 
   const changeMonth = (direction) => {
     setSelectedMonth((prev) => {
@@ -89,55 +87,30 @@ export default function Home() {
         setSelectedYear((y) => y - 1);
         return 12;
       }
-
       if (direction === 1 && prev === 12) {
         setSelectedYear((y) => y + 1);
         return 1;
       }
-
       return prev + direction;
     });
   };
 
-
-  const groupedTransactions = displayTransactions.reduce(
-    (groups, transaction) => {
-      const dateKey = new Date(transaction.createdAt).toDateString();
-
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-
-      groups[dateKey].push(transaction);
-
-      return groups;
-    },
-    {},
-  );
+  const groupedTransactions = displayTransactions.reduce((groups, transaction) => {
+    const dateKey = new Date(transaction.createdAt).toDateString();
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(transaction);
+    return groups;
+  }, {});
 
   const sections = Object.entries(groupedTransactions)
-    .map(([title, data]) => ({
-      title,
-      data,
-    }))
-    .sort((a, b) => new Date(b.title) - new Date(a.title));
+   .map(([title, data]) => ({ title, data }))
+   .sort((a, b) => new Date(b.title) - new Date(a.title));
 
   const balance = totals.income - totals.expense;
 
   return (
-    <Box
-      flex={1}
-      shadow={2}
-      opacity={0.95}
-      style={{
-        backgroundColor: colors.bg,
-      }}
-    >
-      <Box
-        style={{
-          backgroundColor: colors.header,
-        }}
-      >
+    <Box flex={1} shadow={2} opacity={0.95} style={{ backgroundColor: colors.bg }}>
+      <Box style={{ backgroundColor: colors.header }}>
         <Header
           onSearchPress={() => setShowSearch(true)}
           onFilterPress={() => router.push("/fillters")}
@@ -158,7 +131,6 @@ export default function Home() {
         currency={settings.currency}
       />
 
-      {/* Budget Insight */}
       {budgetAssistant && (
         <BudgetAssistant
           title={budgetAssistant.title}
@@ -168,32 +140,14 @@ export default function Home() {
         />
       )}
 
-      {/* TRANSACTIONS */}
       {activeTab === "transactions" && (
-        <TransactionsView
-          sections={sections}
-          deleteTransaction={deleteTransaction}
-        />
+        <TransactionsView sections={sections} deleteTransaction={deleteTransaction} />
       )}
+      {activeTab === "analytics" && <AnalyticsView transactions={displayTransactions} />}
+      {activeTab === "categories" && <CategoriesView transactions={displayTransactions} />}
 
-      {/* ANALYTICS */}
-      {activeTab === "analytics" && (
-        <AnalyticsView transactions={displayTransactions} />
-      )}
-
-      {/* CATEGORIES */}
-      {activeTab === "categories" && (
-        <CategoriesView transactions={displayTransactions} />
-      )}
       <Animated.View
-        style={[
-          fabStyle,
-          {
-            position: "absolute",
-            right: 25,
-            bottom: 30,
-          },
-        ]}
+        style={[fabStyle, { position: "absolute", right: 25, bottom: 30 }]}
       >
         <Pressable onPress={openAdd}>
           <Box
@@ -212,81 +166,92 @@ export default function Home() {
           </Box>
         </Pressable>
       </Animated.View>
-      {/* search modal */}
-      <Modal visible={showSearch} animationType="slide" transparent>
-        <Box
-          flex={1}
-          p="$5"
-          mt="$12"
-          style={{
-            backgroundColor: colors.bg,
-          }}
-        >
-          <HStack alignItems="center" space="md">
-            <Box
-              flex={1}
-              borderRadius={12}
-              px="$3"
-              py="$2"
-              flexDirection="row"
-              alignItems="center"
-              style={{
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                borderWidth: 1,
-                outlineStyle: "none",
-                outlineWidth: 0,
-                boxShadow: "none",
-              }}
-            >
-              <Feather name="search" size={18} color={colors.subText} />
-              <Input
+
+      {/* search modal - FUNCTIONAL + THEME FIXED */}
+      <Modal visible={showSearch} animationType="slide" transparent={false}>
+        <Box flex={1} style={{ backgroundColor: colors.bg }}>
+          <Box pt="$12" pb="$3" px="$4" style={{ backgroundColor: colors.bg }}>
+            <HStack alignItems="center" space="md">
+              <Box
                 flex={1}
-                bg="transparent"
-                borderWidth={0}
-                outline="none"
-                ml="$2"
+                borderRadius={12}
+                px="$3"
+                py="$2"
+                flexDirection="row"
+                alignItems="center"
                 style={{
-                  outlineStyle: "none",
-                  outlineWidth: 0,
-                  boxShadow: "none",
-                  borderColor: "transparent",
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  borderWidth: 1,
                 }}
               >
-                <InputField
-                  placeholder="Search transactions..."
-                  placeholderTextColor={colors.subText}
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  autoFocus={false}
-                  style={{
-                    padding: 0,
-                    fontSize: 16,
-                    outlineStyle: "none",
-                    outlineWidth: 0,
-                    boxShadow: "none",
-                    borderWidth: 0,
-                  }}
-                />
-              </Input>
-              {searchText.length > 0 && (
-                <Pressable onPress={() => setSearchText("")}>
-                  <Feather name="x-circle" size={18} color={colors.subText} />
-                </Pressable>
-              )}
-            </Box>
+                <Feather name="search" size={18} color={colors.subText} />
+                <Input flex={1} bg="transparent" borderWidth={0} ml="$2">
+                  <InputField
+                    placeholder="Search transactions..."
+                    placeholderTextColor={colors.subText}
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    autoFocus={true}
+                    style={{
+                      padding: 0,
+                      fontSize: 16,
+                      color: colors.text,
+                    }}
+                  />
+                </Input>
+                {searchText.length > 0 && (
+                  <Pressable onPress={() => setSearchText("")}>
+                    <Feather name="x-circle" size={18} color={colors.subText} />
+                  </Pressable>
+                )}
+              </Box>
 
-            <Pressable
-              onPress={() => {
-                setSearchText("");
-                setShowSearch(false);
-              }}
-            >
-              <Text color="$red600" fontWeight="600" fontSize={16}>
-                Cancel
+              <Pressable
+                onPress={() => {
+                  setSearchText("");
+                  setShowSearch(false);
+                }}
+              >
+                <Text color="$red600" fontWeight="600" fontSize={16}>
+                  Cancel
+                </Text>
+              </Pressable>
+            </HStack>
+          </Box>
+
+          {searchText.trim().length === 0? (
+            <Box flex={1} alignItems="center" justifyContent="center" px="$10" mt="$20">
+              <Box
+                w={80}
+                h={80}
+                borderRadius={40}
+                alignItems="center"
+                justifyContent="center"
+                style={{ backgroundColor: colors.card }}
+                mb="$4"
+              >
+                <Feather name="search" size={40} color={colors.subText} />
+              </Box>
+              <Text
+                textAlign="center"
+                fontSize={14}
+                fontWeight="500"
+                style={{ color: colors.text }}
+              >
+                Type to search by category, description, account or amount
               </Text>
-            </Pressable>
-          </HStack>
+              <Text
+                fontSize={12}
+                mt="$2"
+                style={{ color: colors.subText }}
+              >
+                {filteredTransactions.length} transactions in this month
+              </Text>
+            </Box>
+          ) : (
+            <TransactionsView sections={sections} deleteTransaction={deleteTransaction} />
+          )}
         </Box>
       </Modal>
     </Box>

@@ -149,32 +149,7 @@ export default function InsightsScreen() {
         mt="$5"
       >
         <ScrollView contentContainerStyle={styles.container}>
-          {/* HEADER */}
-          <VStack space="xs" mb="$8" pt="8" mt="$2">
-            <Text
-              style={[
-                styles.heading,
-                {
-                  color: colors.text,
-                },
-              ]}
-            >
-              Insights
-            </Text>
-
-            <Text
-              style={[
-                styles.subHeading,
-                {
-                  color: colors.subText,
-                },
-              ]}
-            >
-              AI-powered spending intelligence.
-            </Text>
-          </VStack>
-
-          {/* EMPTY CARD */}
+          {/* Empty Card */}
           <Box
             style={[
               styles.emptyCard,
@@ -230,7 +205,7 @@ export default function InsightsScreen() {
   }
 
   return (
-    <Box flex={1} mt="$5">
+    <Box flex={1}>
       <ScrollView
         style={{
           backgroundColor: colors.bg,
@@ -470,13 +445,14 @@ export default function InsightsScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    flex: 1,
     paddingBottom: 100,
   },
   hero: {
     paddingTop: 70,
     paddingHorizontal: 16,
     paddingBottom: 24,
+    marginTop: -16,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     overflow: "hidden",
@@ -488,7 +464,7 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 14,
-    color: "#9CA3AF",
+    color: "#cbd1ba",
     marginTop: 4,
   },
   statCard: {
@@ -505,7 +481,8 @@ const styles = StyleSheet.create({
   statLabel: {
     marginTop: 4,
     fontSize: 12,
-    color: "#575a61",
+    fontWeight: "700",
+    color: "#728b25",
   },
   sectionTitle: {
     fontSize: 20,
@@ -518,7 +495,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   aiBadge: {
-    backgroundColor: "#FFDD00",
+    backgroundColor: "#728b25",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,

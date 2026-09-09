@@ -27,7 +27,6 @@ export default function InsightCard() {
   const nearLimit =
     budgetSummary.length > 0
       ? [...budgetSummary]
-          //.filter((b) => b.percentage < 100)
           .sort((a, b) => b.percentage - a.percentage)[0]
       : null;
 

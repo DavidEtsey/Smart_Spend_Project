@@ -1,4 +1,5 @@
 import { Feather } from "@expo/vector-icons";
+import { ScrollView } from "react-native";
 import {
   Box,
   HStack,
@@ -70,7 +71,7 @@ export default function Home() {
   const { budgetAssistant } = useBudgets();
 
   const displayTransactions = Array.isArray(filteredTransactions)
-   ? filteredTransactions.filter((tx) => {
+    ? filteredTransactions.filter((tx) => {
         const query = searchText.trim().toLowerCase();
         if (!query) return true;
         return (
@@ -95,21 +96,29 @@ export default function Home() {
     });
   };
 
-  const groupedTransactions = displayTransactions.reduce((groups, transaction) => {
-    const dateKey = new Date(transaction.createdAt).toDateString();
-    if (!groups[dateKey]) groups[dateKey] = [];
-    groups[dateKey].push(transaction);
-    return groups;
-  }, {});
+  const groupedTransactions = displayTransactions.reduce(
+    (groups, transaction) => {
+      const dateKey = new Date(transaction.createdAt).toDateString();
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(transaction);
+      return groups;
+    },
+    {},
+  );
 
   const sections = Object.entries(groupedTransactions)
-   .map(([title, data]) => ({ title, data }))
-   .sort((a, b) => new Date(b.title) - new Date(a.title));
+    .map(([title, data]) => ({ title, data }))
+    .sort((a, b) => new Date(b.title) - new Date(a.title));
 
   const balance = totals.income - totals.expense;
 
   return (
-    <Box flex={1} shadow={2} opacity={0.95} style={{ backgroundColor: colors.bg }}>
+    <Box
+      flex={1}
+      shadow={2}
+      opacity={0.95}
+      style={{ backgroundColor: colors.bg }}
+    >
       <Box style={{ backgroundColor: colors.header }}>
         <Header
           onSearchPress={() => setShowSearch(true)}
@@ -123,28 +132,36 @@ export default function Home() {
         selectedYear={selectedYear}
         changeMonth={changeMonth}
       />
-
-      <BalanceCard
-        income={totals.income}
-        expense={totals.expense}
-        balance={balance}
-        currency={settings.currency}
-      />
-
-      {budgetAssistant && (
-        <BudgetAssistant
-          title={budgetAssistant.title}
-          message={budgetAssistant.message}
-          type={budgetAssistant.type}
-          onPress={() => router.push("/(tabs)/budget")}
+      <ScrollView>
+        <BalanceCard
+          income={totals.income}
+          expense={totals.expense}
+          balance={balance}
+          currency={settings.currency}
         />
-      )}
+
+        {budgetAssistant && (
+          <BudgetAssistant
+            title={budgetAssistant.title}
+            message={budgetAssistant.message}
+            type={budgetAssistant.type}
+            onPress={() => router.push("/(tabs)/budget")}
+          />
+        )}
+      </ScrollView>
 
       {activeTab === "transactions" && (
-        <TransactionsView sections={sections} deleteTransaction={deleteTransaction} />
+        <TransactionsView
+          sections={sections}
+          deleteTransaction={deleteTransaction}
+        />
       )}
-      {activeTab === "analytics" && <AnalyticsView transactions={displayTransactions} />}
-      {activeTab === "categories" && <CategoriesView transactions={displayTransactions} />}
+      {activeTab === "analytics" && (
+        <AnalyticsView transactions={displayTransactions} />
+      )}
+      {activeTab === "categories" && (
+        <CategoriesView transactions={displayTransactions} />
+      )}
 
       <Animated.View
         style={[fabStyle, { position: "absolute", right: 25, bottom: 30 }]}
@@ -220,8 +237,14 @@ export default function Home() {
             </HStack>
           </Box>
 
-          {searchText.trim().length === 0? (
-            <Box flex={1} alignItems="center" justifyContent="center" px="$10" mt="$20">
+          {searchText.trim().length === 0 ? (
+            <Box
+              flex={1}
+              alignItems="center"
+              justifyContent="center"
+              px="$10"
+              mt="$20"
+            >
               <Box
                 w={80}
                 h={80}
@@ -241,16 +264,15 @@ export default function Home() {
               >
                 Type to search by category, description, account or amount
               </Text>
-              <Text
-                fontSize={12}
-                mt="$2"
-                style={{ color: colors.subText }}
-              >
+              <Text fontSize={12} mt="$2" style={{ color: colors.subText }}>
                 {filteredTransactions.length} transactions in this month
               </Text>
             </Box>
           ) : (
-            <TransactionsView sections={sections} deleteTransaction={deleteTransaction} />
+            <TransactionsView
+              sections={sections}
+              deleteTransaction={deleteTransaction}
+            />
           )}
         </Box>
       </Modal>

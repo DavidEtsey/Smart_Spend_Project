@@ -1,4 +1,4 @@
-// components/src/constants/categoryColors.js
+
 
 export const CATEGORY_COLORS = {
   Food: "#F97316",

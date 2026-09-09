@@ -1,4 +1,3 @@
-
 export const ACCOUNT_ICON_MAP = {
   cash: "💵",
   bank: "🏦",
@@ -130,7 +129,6 @@ export const getAccountIcon = (name = "") => {
   // Default
   return "other";
 };
-
 
 //  Generates the complete account appearance.
 

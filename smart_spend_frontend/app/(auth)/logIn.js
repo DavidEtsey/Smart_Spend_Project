@@ -55,8 +55,7 @@ export default function Login() {
 
       const data = await response.json();
       console.log("Login status:", response.status);
-      console.log("FULL RESPONSE:", JSON.stringify(data)); // <-- important
-
+      console.log("FULL RESPONSE:", JSON.stringify(data)); 
       if (!response.ok) {
         throw new Error(
           data.error || data.message || "Invalid email or password",

@@ -1,19 +1,16 @@
 import { Pressable } from "react-native";
-import {
-  Box,
-  HStack,
-  VStack,
-  Text,
-} from "@gluestack-ui/themed";
+import { Box, HStack, VStack, Text } from "@gluestack-ui/themed";
 import useAppTheme from "../../hooks/useAppTheme";
 import { useSettings } from "../../app/contexts/settingsContext";
 import { formatCurrency } from "../../app/helpers/formatCurrency";
 
-
 export default function BudgetCategoryCard({ budget, onPress }) {
   const { colors } = useAppTheme();
   const { settings } = useSettings();
-  const percentage = Math.min(Math.max(parseFloat(budget.progress) || 0, 0), 100);
+  const percentage = Math.min(
+    Math.max(parseFloat(budget.progress) || 0, 0),
+    100,
+  );
 
   return (
     <>
@@ -36,13 +33,13 @@ export default function BudgetCategoryCard({ budget, onPress }) {
             <HStack flex={1} space="md" alignItems="center">
               <Box
                 w={50}
-                h={50}
-                style={{
-                  backgroundColor: colors.icon,
-                }}
+                h={46}
                 borderRadius="$xl"
                 justifyContent="center"
                 alignItems="center"
+                style={{
+                  backgroundColor: colors.iconBg,
+                }}
               >
                 <Text fontSize="$2xl">{budget.icon}</Text>
               </Box>
@@ -78,7 +75,7 @@ export default function BudgetCategoryCard({ budget, onPress }) {
                   <Box
                     h="$full"
                     width={`${percentage}%`}
-                    bg={budget.color ||"#85BB65"} 
+                    bg={budget.color || "#85BB65"}
                     borderRadius="$full"
                   />
                 </Box>
@@ -89,9 +86,9 @@ export default function BudgetCategoryCard({ budget, onPress }) {
 
             <HStack alignItems="center" ml="$4">
               <Text
-                fontWeight="$bold"
-                fontSize="$md"
-                color={budget.categoryColor}
+                fontWeight="$semibold"
+                fontSize="$sm"
+                style={{ color: budget.categoryColor || colors.text }}
                 mr="$2"
               >
                 {Math.round(percentage)}%

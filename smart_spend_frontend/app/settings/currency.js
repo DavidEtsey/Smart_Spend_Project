@@ -3,8 +3,6 @@ import { SectionList, Pressable } from "react-native";
 import {
   Box,
   HStack,
-  VStack,
-  Text,
   Input,
   InputField,
   InputSlot,
@@ -82,8 +80,6 @@ export default function CurrencyPage() {
         <Text fontSize="$lg" fontWeight="$medium" color={colors.text}>
           Currency Settings
         </Text>
-
-        
 
         <Box width={60} />
       </HStack>

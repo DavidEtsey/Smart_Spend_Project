@@ -11,7 +11,9 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
+    "components/themed-view.jsx",
+    "components/themed-text.jsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "components/themed-view.jsx", "components/themed-text.jsx"  ]
+  ]
 }

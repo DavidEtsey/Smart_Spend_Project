@@ -93,7 +93,7 @@ export default function AddCategoryPage() {
         <Box w={22} />
       </HStack>
 
-      {/* Body */}
+      
       <VStack px="$4" pt="$6" space="lg">
 
         <Input

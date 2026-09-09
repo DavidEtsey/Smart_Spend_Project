@@ -94,14 +94,10 @@ function AccountGridItem({
 
   const isLastInRow = (index + 1) % NUM_COLUMNS === 0;
 
-  // -----------------------------------------------
-  // ACCOUNT ICON
-  // -----------------------------------------------
+  
 
   const getIcon = () => {
-    // Backend now stores keys such as:
-    // "cash", "bank", "savings", "mobile_money"
-
+   
     if (item.icon && ACCOUNT_ICON_MAP[item.icon]) {
       return ACCOUNT_ICON_MAP[item.icon];
     }
@@ -111,15 +107,13 @@ function AccountGridItem({
     return "💰";
   };
 
-  // -----------------------------------------------
+  
   // ACCOUNT COLOR
-  // -----------------------------------------------
+ 
 
-  const accountColor = item.color || "#85BB65";
+  const accountColor = "#E5E7EB"; 
 
-  // -----------------------------------------------
-  // BASE STYLE
-  // -----------------------------------------------
+ 
 
   const baseStyle = {
     width: ITEM_WIDTH,
@@ -171,10 +165,7 @@ function AccountGridItem({
     );
   }
 
-  // -----------------------------------------------
-  // NORMAL ACCOUNT
-  // -----------------------------------------------
-
+ 
   return (
     <AnimatedPressable
       onPressIn={onPressIn}

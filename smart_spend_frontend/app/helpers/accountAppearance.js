@@ -1,18 +1,4 @@
-// Colors used for automatically generated accounts
-export const ACCOUNT_COLORS = [
-  "#85BB65",
-  "#3B82F6",
-  "#8B5CF6",
-  "#F59E0B",
-  "#EF4444",
-  "#14B8A6",
-  "#EC4899",
-  "#06B6D4",
-  "#F97316",
-  "#6366F1",
-];
 
-// Account icon keys
 export const ACCOUNT_ICON_MAP = {
   cash: "💵",
   bank: "🏦",
@@ -145,36 +131,11 @@ export const getAccountIcon = (name = "") => {
   return "other";
 };
 
-/**
- * Generates a consistent color from the account name.
- *
- * The same account name will always produce
- * the same color.
- */
-export const getAccountColor = (name = "") => {
-  const text = name.trim();
 
-  if (!text) {
-    return ACCOUNT_COLORS[0];
-  }
+//  Generates the complete account appearance.
 
-  let hash = 0;
-
-  for (let i = 0; i < text.length; i++) {
-    hash = text.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  const index = Math.abs(hash) % ACCOUNT_COLORS.length;
-
-  return ACCOUNT_COLORS[index];
-};
-
-/**
- * Generates the complete account appearance.
- */
 export const getAccountAppearance = (name = "") => {
   return {
     icon: getAccountIcon(name),
-    color: getAccountColor(name),
   };
 };

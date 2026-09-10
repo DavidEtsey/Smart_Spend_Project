@@ -4,7 +4,11 @@ import { useSettings } from "../../app/contexts/settingsContext";
 import { formatCurrency } from "../../app/helpers/formatCurrency";
 import useAppTheme from "../../hooks/useAppTheme";
 
-export default function TransactionsView({ sections, deleteTransaction }) {
+export default function TransactionsView({
+  sections,
+  deleteTransaction,
+  ListHeaderComponent,
+}) {
   const { colors } = useAppTheme();
   const { settings } = useSettings();
 
@@ -162,9 +166,15 @@ export default function TransactionsView({ sections, deleteTransaction }) {
       }}
     >
       <SectionList
+        ListHeaderComponent={ListHeaderComponent}
         sections={sections}
         keyExtractor={(item, index) =>
-          String(item.id ?? item.expense_id ?? item.income_id ?? `transaction-${index}`)
+          String(
+            item.id ??
+              item.expense_id ??
+              item.income_id ??
+              `transaction-${index}`,
+          )
         }
         renderItem={renderItem}
         stickySectionHeadersEnabled

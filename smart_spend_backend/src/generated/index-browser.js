@@ -187,7 +187,6 @@ exports.Prisma.AccountScalarFieldEnum = {
   user_id: 'user_id',
   name: 'name',
   icon: 'icon',
-  color: 'color',
   created_at: 'created_at',
   updated_at: 'updated_at'
 };

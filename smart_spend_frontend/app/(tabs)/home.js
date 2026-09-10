@@ -132,36 +132,78 @@ export default function Home() {
         selectedYear={selectedYear}
         changeMonth={changeMonth}
       />
-      <ScrollView>
-        <BalanceCard
-          income={totals.income}
-          expense={totals.expense}
-          balance={balance}
-          currency={settings.currency}
-        />
-
-        {budgetAssistant && (
-          <BudgetAssistant
-            title={budgetAssistant.title}
-            message={budgetAssistant.message}
-            type={budgetAssistant.type}
-            onPress={() => router.push("/(tabs)/budget")}
+      <Box flex={1}>
+        {activeTab === "transactions" && (
+          <TransactionsView
+            sections={sections}
+            deleteTransaction={deleteTransaction}
+            ListHeaderComponent={
+              <>
+                <BalanceCard
+                  income={totals.income}
+                  expense={totals.expense}
+                  balance={balance}
+                  currency={settings.currency}
+                />
+                {budgetAssistant && (
+                  <BudgetAssistant
+                    title={budgetAssistant.title}
+                    message={budgetAssistant.message}
+                    type={budgetAssistant.type}
+                    onPress={() => router.push("/(tabs)/budget")}
+                  />
+                )}
+              </>
+            }
           />
         )}
-      </ScrollView>
 
-      {activeTab === "transactions" && (
-        <TransactionsView
-          sections={sections}
-          deleteTransaction={deleteTransaction}
-        />
-      )}
-      {activeTab === "analytics" && (
-        <AnalyticsView transactions={displayTransactions} />
-      )}
-      {activeTab === "categories" && (
-        <CategoriesView transactions={displayTransactions} />
-      )}
+        {activeTab === "analytics" && (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+          >
+            <BalanceCard
+              income={totals.income}
+              expense={totals.expense}
+              balance={balance}
+              currency={settings.currency}
+            />
+            {budgetAssistant && (
+              <BudgetAssistant
+                title={budgetAssistant.title}
+                message={budgetAssistant.message}
+                type={budgetAssistant.type}
+                onPress={() => router.push("/(tabs)/budget")}
+              />
+            )}
+            <AnalyticsView transactions={displayTransactions} />
+          </ScrollView>
+        )}
+
+        {activeTab === "categories" && (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+          >
+            <BalanceCard
+              income={totals.income}
+              expense={totals.expense}
+              balance={balance}
+              currency={settings.currency}
+            />
+            {budgetAssistant && (
+              <BudgetAssistant
+                title={budgetAssistant.title}
+                message={budgetAssistant.message}
+                type={budgetAssistant.type}
+                onPress={() => router.push("/(tabs)/budget")}
+              />
+            )}
+            <CategoriesView transactions={displayTransactions} />
+          </ScrollView>
+        )}
+      </Box>
 
       <Animated.View
         style={[fabStyle, { position: "absolute", right: 25, bottom: 30 }]}

@@ -9148,7 +9148,6 @@ export namespace Prisma {
     user_id: number | null
     name: string | null
     icon: string | null
-    color: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -9158,7 +9157,6 @@ export namespace Prisma {
     user_id: number | null
     name: string | null
     icon: string | null
-    color: string | null
     created_at: Date | null
     updated_at: Date | null
   }
@@ -9168,7 +9166,6 @@ export namespace Prisma {
     user_id: number
     name: number
     icon: number
-    color: number
     created_at: number
     updated_at: number
     _all: number
@@ -9190,7 +9187,6 @@ export namespace Prisma {
     user_id?: true
     name?: true
     icon?: true
-    color?: true
     created_at?: true
     updated_at?: true
   }
@@ -9200,7 +9196,6 @@ export namespace Prisma {
     user_id?: true
     name?: true
     icon?: true
-    color?: true
     created_at?: true
     updated_at?: true
   }
@@ -9210,7 +9205,6 @@ export namespace Prisma {
     user_id?: true
     name?: true
     icon?: true
-    color?: true
     created_at?: true
     updated_at?: true
     _all?: true
@@ -9307,7 +9301,6 @@ export namespace Prisma {
     user_id: number | null
     name: string
     icon: string | null
-    color: string | null
     created_at: Date
     updated_at: Date | null
     _count: AccountCountAggregateOutputType | null
@@ -9336,7 +9329,6 @@ export namespace Prisma {
     user_id?: boolean
     name?: boolean
     icon?: boolean
-    color?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | Account$userArgs<ExtArgs>
@@ -9352,7 +9344,6 @@ export namespace Prisma {
     user_id?: boolean
     name?: boolean
     icon?: boolean
-    color?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | Account$userArgs<ExtArgs>
@@ -9363,7 +9354,6 @@ export namespace Prisma {
     user_id?: boolean
     name?: boolean
     icon?: boolean
-    color?: boolean
     created_at?: boolean
     updated_at?: boolean
     user?: boolean | Account$userArgs<ExtArgs>
@@ -9374,12 +9364,11 @@ export namespace Prisma {
     user_id?: boolean
     name?: boolean
     icon?: boolean
-    color?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"account_id" | "user_id" | "name" | "icon" | "color" | "created_at" | "updated_at", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"account_id" | "user_id" | "name" | "icon" | "created_at" | "updated_at", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | Account$userArgs<ExtArgs>
     expenses?: boolean | Account$expensesArgs<ExtArgs>
@@ -9409,7 +9398,6 @@ export namespace Prisma {
       user_id: number | null
       name: string
       icon: string | null
-      color: string | null
       created_at: Date
       updated_at: Date | null
     }, ExtArgs["result"]["account"]>
@@ -9844,7 +9832,6 @@ export namespace Prisma {
     readonly user_id: FieldRef<"Account", 'Int'>
     readonly name: FieldRef<"Account", 'String'>
     readonly icon: FieldRef<"Account", 'String'>
-    readonly color: FieldRef<"Account", 'String'>
     readonly created_at: FieldRef<"Account", 'DateTime'>
     readonly updated_at: FieldRef<"Account", 'DateTime'>
   }
@@ -12805,7 +12792,6 @@ export namespace Prisma {
     user_id: 'user_id',
     name: 'name',
     icon: 'icon',
-    color: 'color',
     created_at: 'created_at',
     updated_at: 'updated_at'
   };
@@ -13438,7 +13424,6 @@ export namespace Prisma {
     user_id?: IntNullableFilter<"Account"> | number | null
     name?: StringFilter<"Account"> | string
     icon?: StringNullableFilter<"Account"> | string | null
-    color?: StringNullableFilter<"Account"> | string | null
     created_at?: DateTimeFilter<"Account"> | Date | string
     updated_at?: DateTimeNullableFilter<"Account"> | Date | string | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -13453,7 +13438,6 @@ export namespace Prisma {
     user_id?: SortOrderInput | SortOrder
     name?: SortOrder
     icon?: SortOrderInput | SortOrder
-    color?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
@@ -13472,7 +13456,6 @@ export namespace Prisma {
     user_id?: IntNullableFilter<"Account"> | number | null
     name?: StringFilter<"Account"> | string
     icon?: StringNullableFilter<"Account"> | string | null
-    color?: StringNullableFilter<"Account"> | string | null
     created_at?: DateTimeFilter<"Account"> | Date | string
     updated_at?: DateTimeNullableFilter<"Account"> | Date | string | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -13487,7 +13470,6 @@ export namespace Prisma {
     user_id?: SortOrderInput | SortOrder
     name?: SortOrder
     icon?: SortOrderInput | SortOrder
-    color?: SortOrderInput | SortOrder
     created_at?: SortOrder
     updated_at?: SortOrderInput | SortOrder
     _count?: AccountCountOrderByAggregateInput
@@ -13505,7 +13487,6 @@ export namespace Prisma {
     user_id?: IntNullableWithAggregatesFilter<"Account"> | number | null
     name?: StringWithAggregatesFilter<"Account"> | string
     icon?: StringNullableWithAggregatesFilter<"Account"> | string | null
-    color?: StringNullableWithAggregatesFilter<"Account"> | string | null
     created_at?: DateTimeWithAggregatesFilter<"Account"> | Date | string
     updated_at?: DateTimeNullableWithAggregatesFilter<"Account"> | Date | string | null
   }
@@ -14115,7 +14096,6 @@ export namespace Prisma {
   export type AccountCreateInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     user?: UserCreateNestedOneWithoutAccountInput
@@ -14130,7 +14110,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
@@ -14142,7 +14121,6 @@ export namespace Prisma {
   export type AccountUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneWithoutAccountNestedInput
@@ -14157,7 +14135,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
@@ -14171,7 +14148,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
   }
@@ -14179,7 +14155,6 @@ export namespace Prisma {
   export type AccountUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -14189,7 +14164,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -14968,7 +14942,6 @@ export namespace Prisma {
     user_id?: SortOrder
     name?: SortOrder
     icon?: SortOrder
-    color?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -14983,7 +14956,6 @@ export namespace Prisma {
     user_id?: SortOrder
     name?: SortOrder
     icon?: SortOrder
-    color?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -14993,7 +14965,6 @@ export namespace Prisma {
     user_id?: SortOrder
     name?: SortOrder
     icon?: SortOrder
-    color?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
   }
@@ -16376,7 +16347,6 @@ export namespace Prisma {
   export type AccountCreateWithoutUserInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseCreateNestedManyWithoutAccountInput
@@ -16389,7 +16359,6 @@ export namespace Prisma {
     account_id?: number
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
@@ -16641,7 +16610,6 @@ export namespace Prisma {
     user_id?: IntNullableFilter<"Account"> | number | null
     name?: StringFilter<"Account"> | string
     icon?: StringNullableFilter<"Account"> | string | null
-    color?: StringNullableFilter<"Account"> | string | null
     created_at?: DateTimeFilter<"Account"> | Date | string
     updated_at?: DateTimeNullableFilter<"Account"> | Date | string | null
   }
@@ -16805,7 +16773,6 @@ export namespace Prisma {
   export type AccountCreateWithoutExpensesInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     user?: UserCreateNestedOneWithoutAccountInput
@@ -16819,7 +16786,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     income?: IncomeUncheckedCreateNestedManyWithoutAccountInput
@@ -16922,7 +16888,6 @@ export namespace Prisma {
   export type AccountUpdateWithoutExpensesInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneWithoutAccountNestedInput
@@ -16936,7 +16901,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     income?: IncomeUncheckedUpdateManyWithoutAccountNestedInput
@@ -16983,7 +16947,6 @@ export namespace Prisma {
   export type AccountCreateWithoutIncomeInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     user?: UserCreateNestedOneWithoutAccountInput
@@ -16997,7 +16960,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
@@ -17094,7 +17056,6 @@ export namespace Prisma {
   export type AccountUpdateWithoutIncomeInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneWithoutAccountNestedInput
@@ -17108,7 +17069,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
@@ -17189,7 +17149,6 @@ export namespace Prisma {
   export type AccountCreateWithoutTransfersFromInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     user?: UserCreateNestedOneWithoutAccountInput
@@ -17203,7 +17162,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
@@ -17219,7 +17177,6 @@ export namespace Prisma {
   export type AccountCreateWithoutTransfersToInput = {
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     user?: UserCreateNestedOneWithoutAccountInput
@@ -17233,7 +17190,6 @@ export namespace Prisma {
     user_id?: number | null
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
     expenses?: ExpenseUncheckedCreateNestedManyWithoutAccountInput
@@ -17302,7 +17258,6 @@ export namespace Prisma {
   export type AccountUpdateWithoutTransfersFromInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneWithoutAccountNestedInput
@@ -17316,7 +17271,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
@@ -17338,7 +17292,6 @@ export namespace Prisma {
   export type AccountUpdateWithoutTransfersToInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneWithoutAccountNestedInput
@@ -17352,7 +17305,6 @@ export namespace Prisma {
     user_id?: NullableIntFieldUpdateOperationsInput | number | null
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
@@ -18167,7 +18119,6 @@ export namespace Prisma {
     account_id?: number
     name: string
     icon?: string | null
-    color?: string | null
     created_at?: Date | string
     updated_at?: Date | string | null
   }
@@ -18323,7 +18274,6 @@ export namespace Prisma {
   export type AccountUpdateWithoutUserInput = {
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUpdateManyWithoutAccountNestedInput
@@ -18336,7 +18286,6 @@ export namespace Prisma {
     account_id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expenses?: ExpenseUncheckedUpdateManyWithoutAccountNestedInput
@@ -18349,7 +18298,6 @@ export namespace Prisma {
     account_id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     icon?: NullableStringFieldUpdateOperationsInput | string | null
-    color?: NullableStringFieldUpdateOperationsInput | string | null
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }

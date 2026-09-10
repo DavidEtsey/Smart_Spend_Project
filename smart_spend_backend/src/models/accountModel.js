@@ -11,6 +11,7 @@ const getAccounts = async (user_id, type) => {
     select: {
       account_id: true,
       name: true,
+      icon: true,
     },
   });
 

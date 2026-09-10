@@ -124,9 +124,9 @@ function AccountGridItem({
     justifyContent: "center",
   };
 
-  // -----------------------------------------------
+  
   // ADD NEW ACCOUNT
-  // -----------------------------------------------
+ 
 
   if (item.name === "ADD_NEW") {
     return (

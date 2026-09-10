@@ -130,7 +130,6 @@ model Account {
   user_id    Int? // NULL = default account
   name       String   @db.VarChar(100)
   icon       String?  @db.VarChar(100)
-  color      String?
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime? @updatedAt
 

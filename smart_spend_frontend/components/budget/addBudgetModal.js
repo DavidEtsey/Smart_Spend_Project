@@ -681,7 +681,7 @@ export default function AddBudgetModal({ visible, onClose }) {
                     color: colors.text,
                   }}
                 >
-                  Allocated
+                  Allocated budgets
                 </Text>
 
                 <Text
@@ -694,7 +694,7 @@ export default function AddBudgetModal({ visible, onClose }) {
                 </Text>
               </HStack>
 
-              <HStack justifyContent="space-between" mb="$3">
+              {/* <HStack justifyContent="space-between" mb="$3">
                 <Text
                   style={{
                     color: colors.text,
@@ -712,7 +712,7 @@ export default function AddBudgetModal({ visible, onClose }) {
                 >
                   {formatCurrency(pendingTotal, settings.currency)}
                 </Text>
-              </HStack>
+              </HStack> */}
 
               <View
                 style={{

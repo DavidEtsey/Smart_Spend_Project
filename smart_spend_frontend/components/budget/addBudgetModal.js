@@ -21,7 +21,6 @@ import useAppTheme from "../../hooks/useAppTheme";
 
 import { getCategoryColor } from "../../constants/categoryColors";
 
-
 export default function AddBudgetModal({ visible, onClose }) {
   const { colors } = useAppTheme();
   const { settings } = useSettings();
@@ -79,11 +78,10 @@ export default function AddBudgetModal({ visible, onClose }) {
     }
   }, [visible, loadCategories]);
 
-  
   const expenseTotals = useMemo(() => {
     const totals = {};
 
-    (transactions||[])
+    (transactions || [])
       .filter((transaction) => transaction.type === "expense")
       .forEach((transaction) => {
         const categoryId = Number(transaction.category_id);
@@ -91,8 +89,7 @@ export default function AddBudgetModal({ visible, onClose }) {
         if (!categoryId) return;
 
         totals[categoryId] =
-          (totals[categoryId] || 0) +
-          (Number(transaction.amount) || 0);
+          (totals[categoryId] || 0) + (Number(transaction.amount) || 0);
       });
 
     return totals;
@@ -120,14 +117,14 @@ export default function AddBudgetModal({ visible, onClose }) {
    * Check whether a category already has a budget.
    */
   const isCategoryUsed = (categoryId) => {
-  // Existing saved budget
+    // Existing saved budget
     const existsInSavedBudgets = monthlyBudgets.some(
-      (budget) => Number(budget.category_id) === Number(categoryId)
+      (budget) => Number(budget.category_id) === Number(categoryId),
     );
 
     // Budget waiting to be saved
     const existsInPendingBudgets = pendingBudgets.some(
-      (budget) => Number(budget.category_id) === Number(categoryId)
+      (budget) => Number(budget.category_id) === Number(categoryId),
     );
 
     return existsInSavedBudgets || existsInPendingBudgets;
@@ -137,12 +134,12 @@ export default function AddBudgetModal({ visible, onClose }) {
    * Add one budget to the temporary list.
    */
   const handleAddBudget = () => {
-  if (!selectedCategory) {
-    Alert.alert("Category Required", "Please select a category.");
-    return;
-  }
+    if (!selectedCategory) {
+      Alert.alert("Category Required", "Please select a category.");
+      return;
+    }
 
-  const numericAmount = Number(amount);
+    const numericAmount = Number(amount);
 
     if (!amount || Number.isNaN(numericAmount) || numericAmount <= 0) {
       Alert.alert("Invalid Amount", "Please enter a valid budget amount.");
@@ -152,7 +149,7 @@ export default function AddBudgetModal({ visible, onClose }) {
     if (isCategoryUsed(selectedCategory.category_id)) {
       Alert.alert(
         "Category Already Used",
-        `${selectedCategory.category} already has a budget for this month.`
+        `${selectedCategory.category} already has a budget for this month.`,
       );
       return;
     }
@@ -164,8 +161,8 @@ export default function AddBudgetModal({ visible, onClose }) {
         "Budget Exceeded",
         `Only ${formatCurrency(
           Math.max(remainingBeforeThisBudget, 0),
-          settings.currency
-        )} is available for another budget.`
+          settings.currency,
+        )} is available for another budget.`,
       );
       return;
     }
@@ -175,8 +172,7 @@ export default function AddBudgetModal({ visible, onClose }) {
       category: selectedCategory.category,
       categoryIcon: selectedCategory.icon,
       categoryColor:
-        selectedCategory.color ||
-        getCategoryColor(selectedCategory.category),
+        selectedCategory.color || getCategoryColor(selectedCategory.category),
       amount: numericAmount,
       month: selectedMonth,
       year: selectedYear,
@@ -189,11 +185,11 @@ export default function AddBudgetModal({ visible, onClose }) {
     setAmount("");
   };
 
-    /*
-    * Remove a pending budget.
-    */
-    const handleRemoveBudget = (index) => {
-      setPendingBudgets((prev) => prev.filter((_, i) => i !== index));
+  /*
+   * Remove a pending budget.
+   */
+  const handleRemoveBudget = (index) => {
+    setPendingBudgets((prev) => prev.filter((_, i) => i !== index));
   };
 
   /*
@@ -208,7 +204,7 @@ export default function AddBudgetModal({ visible, onClose }) {
     if (pendingTotal > availableIncome) {
       Alert.alert(
         "Budget Exceeded",
-        "The budgets exceed your available monthly income."
+        "The budgets exceed your available monthly income.",
       );
       return;
     }
@@ -225,7 +221,7 @@ export default function AddBudgetModal({ visible, onClose }) {
         "Budgets Saved",
         `${pendingBudgets.length} budget${
           pendingBudgets.length > 1 ? "s" : ""
-        } saved successfully.`
+        } saved successfully.`,
       );
 
       // Clear pending budgets
@@ -240,7 +236,7 @@ export default function AddBudgetModal({ visible, onClose }) {
 
       Alert.alert(
         "Unable to Save",
-        error?.message || "Something went wrong while saving the budgets."
+        error?.message || "Something went wrong while saving the budgets.",
       );
     }
   };
@@ -261,11 +257,12 @@ export default function AddBudgetModal({ visible, onClose }) {
       transparent
       animationType="slide"
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
       <Box
-        flex={1}
-        justifyContent="flex-end"
         style={{
+          flex: 1,
+          justifyContent: "flex-end",
           backgroundColor: "rgba(0,0,0,0.35)",
         }}
       >
@@ -273,6 +270,7 @@ export default function AddBudgetModal({ visible, onClose }) {
           style={{
             backgroundColor: colors.card,
             maxHeight: "92%",
+            width: "100%",
           }}
           borderTopLeftRadius="$4xl"
           borderTopRightRadius="$4xl"
@@ -329,9 +327,7 @@ export default function AddBudgetModal({ visible, onClose }) {
               paddingBottom: 20,
             }}
           >
-            {/* ================================= */}
             {/* PENDING BUDGETS */}
-            {/* ================================= */}
 
             {pendingBudgets.length > 0 && (
               <Box mb="$6">
@@ -442,9 +438,7 @@ export default function AddBudgetModal({ visible, onClose }) {
               </Box>
             )}
 
-            {/* ================================= */}
             {/* CATEGORY */}
-            {/* ================================= */}
 
             <Text
               fontWeight="$semibold"
@@ -491,13 +485,15 @@ export default function AddBudgetModal({ visible, onClose }) {
               </Box>
             )}
 
-            {!loadingCategories && !categoryError && categories.length === 0 && (
-              <Box mb="$5" py="$3">
-                <Text fontSize="$sm" style={{ color: colors.subText }}>
-                  No expense categories yet.
-                </Text>
-              </Box>
-            )}
+            {!loadingCategories &&
+              !categoryError &&
+              categories.length === 0 && (
+                <Box mb="$5" py="$3">
+                  <Text fontSize="$sm" style={{ color: colors.subText }}>
+                    No expense categories yet.
+                  </Text>
+                </Box>
+              )}
 
             <HStack
               flexWrap="wrap"
@@ -507,11 +503,13 @@ export default function AddBudgetModal({ visible, onClose }) {
               }}
             >
               {categories.map((item) => {
-                const selected = selectedCategory?.category_id === item.category_id;
+                const selected =
+                  selectedCategory?.category_id === item.category_id;
 
                 const disabled = isCategoryUsed(item.category_id);
 
-                const categoryColor = item.color || getCategoryColor(item.category);
+                const categoryColor =
+                  item.color || getCategoryColor(item.category);
 
                 return (
                   <Pressable
@@ -589,10 +587,8 @@ export default function AddBudgetModal({ visible, onClose }) {
               style={{
                 borderWidth: 2,
                 borderColor: selectedCategory
-                  ? (
-                      selectedCategory.color ||
-                      getCategoryColor(selectedCategory.category)
-                    )
+                  ? selectedCategory.color ||
+                    getCategoryColor(selectedCategory.category)
                   : colors.border,
                 backgroundColor: colors.iconBg,
                 color: colors.text,
@@ -603,9 +599,7 @@ export default function AddBudgetModal({ visible, onClose }) {
               }}
             />
 
-            {/* ================================= */}
             {/* ADD ANOTHER */}
-            {/* ================================= */}
 
             <Pressable onPress={handleAddBudget}>
               <Box
@@ -634,9 +628,7 @@ export default function AddBudgetModal({ visible, onClose }) {
               </Box>
             </Pressable>
 
-            {/* ================================= */}
             {/* SUMMARY */}
-            {/* ================================= */}
 
             <Box
               mt="$6"
@@ -743,9 +735,7 @@ export default function AddBudgetModal({ visible, onClose }) {
               </HStack>
             </Box>
 
-            {/* ================================= */}
             {/* ACTION BUTTONS */}
-            {/* ================================= */}
 
             <HStack mt="$6" space="md">
               {/* CANCEL */}

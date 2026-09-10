@@ -14,17 +14,14 @@ export default function Calculator({ value = "0", onChange, onClose }) {
   const currentCurrency = settings.currency;
   const currencyCode = currentCurrency.code;
   const currencySymbol = currentCurrency.symbol;
-  
 
   useEffect(() => {
     fetchExchangeRates();
   }, []);
 
-  
   const fetchExchangeRates = async () => {
     setIsLoadingRates(true);
     try {
-    
       const response = await fetch(
         `https://api.exchangerate-api.com/v4/latest/USD`,
       );
@@ -32,7 +29,7 @@ export default function Calculator({ value = "0", onChange, onClose }) {
       setExchangeRates(data.rates);
     } catch (error) {
       console.error("Error fetching exchange rates:", error);
-     
+
       setExchangeRates({
         USD: 1,
         EUR: 0.92,
@@ -46,15 +43,14 @@ export default function Calculator({ value = "0", onChange, onClose }) {
     }
   };
 
- 
- const formatWithCurrency = (amount, currency) => {
-   const amountNum = Number(amount) || 0;
+  const formatWithCurrency = (amount, currency) => {
+    const amountNum = Number(amount) || 0;
 
-   return new Intl.NumberFormat(undefined, {
-     style: "currency",
-     currency: currency,
-   }).format(amountNum);
- };
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currency,
+    }).format(amountNum);
+  };
 
   // Calculate exchange rate preview
   const getExchangePreview = () => {
@@ -129,6 +125,7 @@ export default function Calculator({ value = "0", onChange, onClose }) {
             styles.sheet,
             {
               backgroundColor: colors.card,
+              height: "55%",
             },
           ]}
         >
